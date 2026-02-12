@@ -11,25 +11,25 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        // Salesforce-inspired neutral palette
-        'sf-nav': '#032D60',
-        'sf-blue': '#0176D3',
-        'sf-blue-light': '#EBF5FE',
-        'sf-border': '#C9C9C9',
-        'sf-border-light': '#E5E5E5',
-        'sf-bg': '#F3F3F3',
-        'sf-card': '#FFFFFF',
-        'sf-text': '#181818',
-        'sf-text-secondary': '#706E6B',
-        'sf-text-tertiary': '#939393',
-        // Status - used sparingly
-        'sf-error': '#BA0517',
-        'sf-warning': '#FE9339',
-        'sf-success': '#2E844A',
-        'sf-info': '#0176D3',
-        'sf-error-bg': '#FEF1EE',
-        'sf-warning-bg': '#FFF8E6',
-        'sf-success-bg': '#EBF7E6',
+        'sf-nav': 'var(--sf-nav)',
+        'sf-blue': 'var(--sf-blue)',
+        'sf-blue-light': 'var(--sf-blue-light)',
+        'sf-border': 'var(--sf-border)',
+        'sf-border-light': 'var(--sf-border-light)',
+        'sf-bg': 'var(--sf-bg)',
+        'sf-card': 'var(--sf-card)',
+        'sf-text': 'var(--sf-text)',
+        'sf-text-secondary': 'var(--sf-text-secondary)',
+        'sf-text-tertiary': 'var(--sf-text-tertiary)',
+        'sf-error': 'var(--sf-error)',
+        'sf-warning': 'var(--sf-warning)',
+        'sf-warning-dark': 'var(--sf-warning-dark)',
+        'sf-success': 'var(--sf-success)',
+        'sf-info': 'var(--sf-info)',
+        'sf-error-bg': 'var(--sf-error-bg)',
+        'sf-warning-bg': 'var(--sf-warning-bg)',
+        'sf-success-bg': 'var(--sf-success-bg)',
+        'sf-badge-neutral-bg': 'var(--sf-badge-neutral-bg)',
       },
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans KR', 'sans-serif'],
@@ -42,10 +42,23 @@ tailwind.config = {
 }
 </script>
 <style>
-  body { background: #F3F3F3; -webkit-font-smoothing: antialiased; font-size: 14px; }
+  :root {
+    --sf-nav: #032D60; --sf-blue: #0176D3; --sf-blue-light: #EBF5FE;
+    --sf-bg: #F3F3F3; --sf-card: #FFFFFF; --sf-border: #C9C9C9;
+    --sf-border-light: #E5E5E5; --sf-border-subtle: #F0F0F0;
+    --sf-table-header-bg: #FAFAFB; --sf-badge-neutral-bg: #EEEEEE;
+    --sf-text: #181818; --sf-text-secondary: #706E6B; --sf-text-tertiary: #939393;
+    --sf-error: #BA0517; --sf-warning: #FE9339; --sf-warning-dark: #B95D08;
+    --sf-success: #2E844A; --sf-info: #0176D3;
+    --sf-error-bg: #FEF1EE; --sf-warning-bg: #FFF8E6; --sf-success-bg: #EBF7E6;
+    --chart-1: #0176D3; --chart-2: #FE9339; --chart-3: #2E844A;
+    --chart-4: #BA0517; --chart-5: #939393; --chart-6: #7B61FF; --chart-7: #00B4D8;
+    --chart-grid: #F0F0F0;
+  }
+  body { background: var(--sf-bg); -webkit-font-smoothing: antialiased; font-size: 14px; color: var(--sf-text); }
   /* Salesforce-style card */
-  .sf-card { background: #fff; border: 1px solid #E5E5E5; border-radius: 4px; }
-  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid #E5E5E5; }
+  .sf-card { background: var(--sf-card); border: 1px solid var(--sf-border-light); border-radius: 4px; }
+  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid var(--sf-border-light); }
   .sf-card-body { padding: 18px; }
   /* Pipeline connector */
   .pipeline-connector { position: relative; }
@@ -56,7 +69,7 @@ tailwind.config = {
     right: -20px;
     width: 20px;
     height: 1px;
-    background: #C9C9C9;
+    background: var(--sf-border);
   }
   .pipeline-connector::before {
     content: '';
@@ -67,29 +80,33 @@ tailwind.config = {
     height: 0;
     border-top: 4px solid transparent;
     border-bottom: 4px solid transparent;
-    border-left: 6px solid #C9C9C9;
+    border-left: 6px solid var(--sf-border);
   }
   .pipeline-stage:last-child .pipeline-connector::after,
   .pipeline-stage:last-child .pipeline-connector::before { display: none; }
   /* Tab */
-  .sf-tab { padding: 12px 18px; font-size: 14px; color: #706E6B; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
-  .sf-tab:hover { color: #181818; }
-  .sf-tab.active { color: #0176D3; border-bottom-color: #0176D3; font-weight: 600; }
+  .sf-tab { padding: 12px 18px; font-size: 14px; color: var(--sf-text-secondary); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .sf-tab:hover { color: var(--sf-text); }
+  .sf-tab.active { color: var(--sf-blue); border-bottom-color: var(--sf-blue); font-weight: 600; }
   .sf-tab-content { display: none; }
   .sf-tab-content.active { display: block; }
   /* Status dot */
   .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
   /* Table */
-  .sf-table th { font-size: 12px; font-weight: 600; color: #706E6B; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: #FAFAFB; border-bottom: 1px solid #E5E5E5; }
-  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid #F0F0F0; color: #181818; }
-  .sf-table tr:hover td { background: #F3F3F3; }
+  .sf-table th { font-size: 12px; font-weight: 600; color: var(--sf-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: var(--sf-table-header-bg); border-bottom: 1px solid var(--sf-border-light); }
+  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid var(--sf-border-subtle); color: var(--sf-text); }
+  .sf-table tr:hover td { background: var(--sf-bg); }
   /* Badge */
   .sf-badge { font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 500; display: inline-block; }
   /* Velocity cell */
-  .vel-cell { border: 1px solid #E5E5E5; border-radius: 4px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.15s; }
-  .vel-cell:hover { background: #F3F3F3; }
+  .vel-cell { border: 1px solid var(--sf-border-light); border-radius: 4px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.15s; }
+  .vel-cell:hover { background: var(--sf-bg); }
   /* Priority bar */
   .priority-bar { width: 3px; border-radius: 2px; position: absolute; left: 0; top: 0; bottom: 0; }
+  /* Theme swatch */
+  .theme-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .theme-swatch:hover { border-color: rgba(255,255,255,0.8); }
+  .theme-swatch.active { border-color: white !important; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); transform: scale(1.15); }
 
   /* ===== Mobile Responsive ===== */
   @media (max-width: 768px) {
@@ -98,7 +115,7 @@ tailwind.config = {
     .sf-card-body { padding: 12px; }
 
     /* Nav bar */
-    nav .ml-auto { display: none; }
+    nav .nav-meta { display: none; }
 
     /* Filter bar wrap */
     .filter-bar-wrap { flex-wrap: wrap; }
@@ -158,7 +175,17 @@ tailwind.config = {
 <nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
   <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
   <span class="text-white/60 text-xs">재고 분석</span>
-  <div class="ml-auto text-xs text-white/50">2026. 2. 12. | Keychron | 1,758 SKU</div>
+  <div class="ml-auto flex items-center gap-3">
+    <div class="flex items-center gap-1.5" id="themeSwitcher">
+      <button data-theme="salesforce" title="Salesforce" class="theme-swatch active" style="background:linear-gradient(135deg,#032D60 50%,#0176D3 50%)"></button>
+      <button data-theme="monochrome" title="Monochrome" class="theme-swatch" style="background:linear-gradient(135deg,#1A1A2E 50%,#3D3D5C 50%)"></button>
+      <button data-theme="earth" title="Earth Tone" class="theme-swatch" style="background:linear-gradient(135deg,#3C3228 50%,#7D8B6A 50%)"></button>
+      <button data-theme="midnight" title="Midnight" class="theme-swatch" style="background:linear-gradient(135deg,#0D0D12 50%,#5B9BD5 50%)"></button>
+      <button data-theme="pastel" title="Pastel" class="theme-swatch" style="background:linear-gradient(135deg,#4A5568 50%,#6B8EB5 50%)"></button>
+    </div>
+    <span class="text-white/20 text-xs">|</span>
+    <div class="text-xs text-white/50 nav-meta">2026. 2. 12. | Keychron | 1,758 SKU</div>
+  </div>
 </nav>
 
 <!-- Filter Bar -->
@@ -252,7 +279,7 @@ tailwind.config = {
           </div>
         </div>
         <div class="mt-2 ml-2 border-l-2 border-sf-warning pl-3 py-1">
-          <div class="text-2xs font-medium" style="color:#B95D08">입고 지연 5 SKU</div>
+          <div class="text-2xs font-medium text-sf-warning-dark">입고 지연 5 SKU</div>
           <div class="text-2xs text-sf-text-tertiary">예정일 초과 미도착</div>
         </div>
       </div>
@@ -379,11 +406,11 @@ tailwind.config = {
         <div class="py-1.5 border-b border-sf-border-light">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-medium text-sf-text">C2 Pro 8K 저소음적축</span>
-            <span class="text-2xs font-semibold" style="color:#B95D08">×1.8</span>
+            <span class="text-2xs font-semibold text-sf-warning-dark">×1.8</span>
           </div>
           <div class="text-2xs text-sf-text-tertiary">주 32개 → 56개 · 예상보다 2주 빨리 소진</div>
           <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
-            <div class="h-1 rounded-full" style="width:65%;background:#FE9339"></div>
+            <div class="h-1 rounded-full bg-sf-warning" style="width:65%"></div>
           </div>
         </div>
         <div class="py-1.5 border-b border-sf-border-light">
@@ -482,7 +509,7 @@ tailwind.config = {
         <tr>
           <td class="p-2 text-2xs font-medium text-sf-text-secondary">빠른 회전<br><span class="text-sf-text-tertiary font-normal">상위 20%</span></td>
           <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">8</div><div class="text-2xs text-sf-error">긴급발주</div><div class="text-2xs text-sf-text-tertiary">2.1억</div></div></td>
-          <td class="p-1"><div class="vel-cell border-sf-warning bg-sf-warning-bg"><div class="text-base font-bold text-sf-text">23</div><div class="text-2xs" style="color:#B95D08">발주필요</div><div class="text-2xs text-sf-text-tertiary">3.8억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-warning bg-sf-warning-bg"><div class="text-base font-bold text-sf-text">23</div><div class="text-2xs text-sf-warning-dark">발주필요</div><div class="text-2xs text-sf-text-tertiary">3.8억</div></div></td>
           <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">45</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">5.2억</div></div></td>
           <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">12</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.9억</div></div></td>
           <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">3</div><div class="text-2xs text-sf-text-secondary">과잉</div><div class="text-2xs text-sf-text-tertiary">0.8억</div></div></td>
@@ -598,31 +625,31 @@ tailwind.config = {
           <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
         </tr>
         <tr class="relative">
-          <td><div class="priority-bar" style="background:#FE9339"></div><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">P2</span></td>
+          <td><div class="priority-bar bg-sf-warning"></div><span class="sf-badge bg-sf-warning-bg text-sf-warning-dark">P2</span></td>
           <td class="text-2xs text-sf-text-tertiary">0029-0396-0006</td>
           <td><span class="font-medium">키크론 B Pro</span><br><span class="text-2xs text-sf-text-tertiary">B1 Pro Retro Red Frame</span></td>
-          <td class="text-right font-semibold" style="color:#B95D08">45</td>
+          <td class="text-right font-semibold text-sf-warning-dark">45</td>
           <td class="text-right">202</td>
-          <td class="text-right font-medium" style="color:#B95D08">2/14</td>
+          <td class="text-right font-medium text-sf-warning-dark">2/14</td>
           <td class="text-right text-sf-text-tertiary">—</td>
           <td class="text-center text-2xs text-sf-text-secondary">→ 0%</td>
           <td class="text-right font-medium">22,825,152</td>
           <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
         </tr>
         <tr class="relative">
-          <td><div class="priority-bar" style="background:#FE9339"></div><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">P2</span></td>
+          <td><div class="priority-bar bg-sf-warning"></div><span class="sf-badge bg-sf-warning-bg text-sf-warning-dark">P2</span></td>
           <td class="text-2xs text-sf-text-tertiary">0029-0108-0067</td>
           <td><span class="font-medium">팜레스트</span><br><span class="text-2xs text-sf-text-tertiary">실리콘 팜레스트 레트로 파스텔</span></td>
-          <td class="text-right font-semibold" style="color:#B95D08">76</td>
+          <td class="text-right font-semibold text-sf-warning-dark">76</td>
           <td class="text-right">167</td>
-          <td class="text-right font-medium" style="color:#B95D08">2/15</td>
+          <td class="text-right font-medium text-sf-warning-dark">2/15</td>
           <td class="text-right text-sf-text-tertiary">—</td>
           <td class="text-center text-2xs text-sf-error">↑ +15%</td>
           <td class="text-right font-medium">6,680,560</td>
           <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
         </tr>
         <tr class="relative">
-          <td><div class="priority-bar bg-sf-border"></div><span class="sf-badge" style="background:#EEE;color:#706E6B">P3</span></td>
+          <td><div class="priority-bar bg-sf-border"></div><span class="sf-badge bg-sf-badge-neutral-bg text-sf-text-secondary">P3</span></td>
           <td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td>
           <td><span class="font-medium">키크론 B</span><br><span class="text-2xs text-sf-text-tertiary">Space Gray Frame</span></td>
           <td class="text-right">267</td>
@@ -672,7 +699,7 @@ tailwind.config = {
           <thead><tr><th class="text-left">SKU</th><th class="text-right">발주 수량</th><th class="text-right">현재 재고</th><th class="text-right">품절 예상</th><th class="text-center">상태</th></tr></thead>
           <tbody>
             <tr><td>B1 Pro Space Gray Frame</td><td class="text-right">500</td><td class="text-right font-semibold text-sf-error">0</td><td class="text-right text-sf-error font-medium">이미 품절</td><td class="text-center"><span class="status-dot bg-sf-error"></span></td></tr>
-            <tr><td>B1 Pro Retro Red Frame</td><td class="text-right">300</td><td class="text-right font-semibold" style="color:#B95D08">45</td><td class="text-right" style="color:#B95D08">2/14</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
+            <tr><td>B1 Pro Retro Red Frame</td><td class="text-right">300</td><td class="text-right font-semibold text-sf-warning-dark">45</td><td class="text-right text-sf-warning-dark">2/14</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
           </tbody>
         </table>
       </div>
@@ -693,7 +720,7 @@ tailwind.config = {
           <tbody>
             <tr><td>K10 MAX 파스텔 RGB</td><td class="text-right">1,200</td><td class="text-right">299</td><td class="text-right text-sf-text-secondary">2/25</td><td class="text-center"><span class="status-dot bg-sf-success"></span></td></tr>
             <tr><td>팜레스트 실리콘 K10P</td><td class="text-right">800</td><td class="text-right">832</td><td class="text-right text-sf-text-secondary">3/10</td><td class="text-center"><span class="status-dot bg-sf-success"></span></td></tr>
-            <tr><td>C2 Pro 8K 핫스왑</td><td class="text-right">200</td><td class="text-right">178</td><td class="text-right" style="color:#B95D08">2/18</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
+            <tr><td>C2 Pro 8K 핫스왑</td><td class="text-right">200</td><td class="text-right">178</td><td class="text-right text-sf-warning-dark">2/18</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
           </tbody>
         </table>
       </div>
@@ -719,9 +746,9 @@ tailwind.config = {
     <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
       <div class="text-xs text-sf-text-secondary">3단계 분류별 추천 조치</div>
       <div class="flex gap-2 text-2xs">
-        <span class="sf-badge" style="background:#EEE;color:#706E6B">사장 87</span>
-        <span class="sf-badge" style="background:#EEE;color:#706E6B">저회전 173</span>
-        <span class="sf-badge" style="background:#EEE;color:#706E6B">확인필요 15</span>
+        <span class="sf-badge bg-sf-badge-neutral-bg text-sf-text-secondary">사장 87</span>
+        <span class="sf-badge bg-sf-badge-neutral-bg text-sf-text-secondary">저회전 173</span>
+        <span class="sf-badge bg-sf-badge-neutral-bg text-sf-text-secondary">확인필요 15</span>
       </div>
     </div>
     <div class="mobile-table-wrap">
@@ -732,8 +759,8 @@ tailwind.config = {
       <tbody>
         <tr><td><span class="sf-badge bg-sf-error-bg text-sf-error">사장</span></td><td><span class="font-medium">EX75 HE 블랙 8K</span><br><span class="text-2xs text-sf-text-tertiary">마그네틱 핫스왑</span></td><td class="text-right">792</td><td class="text-right font-medium">39,921,770</td><td class="text-right text-sf-error">2025-11-15</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
         <tr><td><span class="sf-badge bg-sf-error-bg text-sf-error">사장</span></td><td><span class="font-medium">키스킨 B1</span><br><span class="text-2xs text-sf-text-tertiary">KSB1</span></td><td class="text-right">1,798</td><td class="text-right font-medium">2,124,516</td><td class="text-right text-sf-error">2025-10-22</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
-        <tr><td><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">저회전</span></td><td><span class="font-medium">더스트커버 KSA</span><br><span class="text-2xs text-sf-text-tertiary">DC-6 Full 100%</span></td><td class="text-right">2,779</td><td class="text-right font-medium">14,178,486</td><td class="text-right text-sf-text-secondary">2026-02-05</td><td class="text-right text-sf-text-secondary">22.7</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
-        <tr><td><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">저회전</span></td><td><span class="font-medium">K10 Pro SE 2.4G</span><br><span class="text-2xs text-sf-text-tertiary">핫스왑 바나나축(구)</span></td><td class="text-right">408</td><td class="text-right font-medium">26,348,886</td><td class="text-right text-sf-text-secondary">2026-02-10</td><td class="text-right text-sf-text-secondary">17.2</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+        <tr><td><span class="sf-badge bg-sf-warning-bg text-sf-warning-dark">저회전</span></td><td><span class="font-medium">더스트커버 KSA</span><br><span class="text-2xs text-sf-text-tertiary">DC-6 Full 100%</span></td><td class="text-right">2,779</td><td class="text-right font-medium">14,178,486</td><td class="text-right text-sf-text-secondary">2026-02-05</td><td class="text-right text-sf-text-secondary">22.7</td><td class="text-center"><span class="text-2xs font-medium text-sf-warning-dark">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+        <tr><td><span class="sf-badge bg-sf-warning-bg text-sf-warning-dark">저회전</span></td><td><span class="font-medium">K10 Pro SE 2.4G</span><br><span class="text-2xs text-sf-text-tertiary">핫스왑 바나나축(구)</span></td><td class="text-right">408</td><td class="text-right font-medium">26,348,886</td><td class="text-right text-sf-text-secondary">2026-02-10</td><td class="text-right text-sf-text-secondary">17.2</td><td class="text-center"><span class="text-2xs font-medium text-sf-warning-dark">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
       </tbody>
     </table>
     </div>
@@ -755,7 +782,7 @@ tailwind.config = {
       <tbody>
         <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0396-0001</td><td><span class="font-medium">B1 Pro Space Gray Frame</span></td><td class="text-right font-semibold text-sf-error">0</td><td class="text-right">211</td><td class="text-right text-sf-error">0</td><td class="text-right">18,580,248</td><td class="text-center"><span class="status-dot bg-sf-error mr-1"></span><span class="text-2xs text-sf-error">품절</span></td></tr>
         <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0108-0031</td><td><span class="font-medium">팜레스트 실리콘 K10P</span></td><td class="text-right">832</td><td class="text-right">141</td><td class="text-right text-sf-success">5.9</td><td class="text-right">10,455,798</td><td class="text-center"><span class="status-dot bg-sf-success mr-1"></span><span class="text-2xs text-sf-success">정상</span></td></tr>
-        <tr><td class="text-2xs text-sf-text-tertiary">보통</td><td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td><td><span class="font-medium">B Space Gray Frame</span></td><td class="text-right">267</td><td class="text-right">66</td><td class="text-right text-sf-text-secondary">4.0</td><td class="text-right">15,906,677</td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span><span class="text-2xs" style="color:#B95D08">주의</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">보통</td><td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td><td><span class="font-medium">B Space Gray Frame</span></td><td class="text-right">267</td><td class="text-right">66</td><td class="text-right text-sf-text-secondary">4.0</td><td class="text-right">15,906,677</td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span><span class="text-2xs text-sf-warning-dark">주의</span></td></tr>
         <tr><td class="text-2xs text-sf-text-tertiary">무판매</td><td class="text-2xs text-sf-text-tertiary">0029-0509-0001</td><td><span class="font-medium">EX75 HE 블랙 8K</span></td><td class="text-right text-sf-text-secondary">792</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-center"><span class="status-dot bg-sf-border mr-1"></span><span class="text-2xs text-sf-text-tertiary">사장</span></td></tr>
       </tbody>
     </table>
@@ -777,46 +804,132 @@ document.querySelectorAll('.sf-tab').forEach(btn => {
   });
 });
 
-// Chart defaults - minimal Salesforce style
+// Chart defaults
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif";
 Chart.defaults.font.size = 12;
-Chart.defaults.color = '#706E6B';
 
-// Chart A: Status Trend
-new Chart(document.getElementById('statusTrendChart'), {
-  type: 'line',
-  data: {
-    labels: ['1/6', '1/13', '1/20', '1/27', '2/3', '2/10', '2/12'],
-    datasets: [
-      { label: '품절', data: [8,10,9,12,11,14,15], borderColor: '#BA0517', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
-      { label: '소진임박', data: [28,32,30,35,38,40,41], borderColor: '#FE9339', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
-      { label: '정상', data: [195,192,198,190,188,185,183], borderColor: '#2E844A', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
-      { label: '과잉', data: [250,255,260,265,270,273,275], borderColor: '#939393', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 }
-    ]
+// ===== Theme Definitions =====
+const THEMES = {
+  salesforce: {
+    '--sf-nav':'#032D60','--sf-blue':'#0176D3','--sf-blue-light':'#EBF5FE',
+    '--sf-bg':'#F3F3F3','--sf-card':'#FFFFFF','--sf-border':'#C9C9C9','--sf-border-light':'#E5E5E5',
+    '--sf-border-subtle':'#F0F0F0','--sf-table-header-bg':'#FAFAFB','--sf-badge-neutral-bg':'#EEEEEE',
+    '--sf-text':'#181818','--sf-text-secondary':'#706E6B','--sf-text-tertiary':'#939393',
+    '--sf-error':'#BA0517','--sf-warning':'#FE9339','--sf-warning-dark':'#B95D08','--sf-success':'#2E844A','--sf-info':'#0176D3',
+    '--sf-error-bg':'#FEF1EE','--sf-warning-bg':'#FFF8E6','--sf-success-bg':'#EBF7E6',
+    '--chart-1':'#0176D3','--chart-2':'#FE9339','--chart-3':'#2E844A','--chart-4':'#BA0517',
+    '--chart-5':'#939393','--chart-6':'#7B61FF','--chart-7':'#00B4D8','--chart-grid':'#F0F0F0'
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 16, font: { size: 10 } } } },
-    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#F0F0F0' }, border: { display: false } } }
+  monochrome: {
+    '--sf-nav':'#1A1A2E','--sf-blue':'#3D3D5C','--sf-blue-light':'#EEEEF2',
+    '--sf-bg':'#F5F5F7','--sf-card':'#FFFFFF','--sf-border':'#C8C8CC','--sf-border-light':'#E2E2E6',
+    '--sf-border-subtle':'#EDEDF0','--sf-table-header-bg':'#F8F8FA','--sf-badge-neutral-bg':'#ECECEC',
+    '--sf-text':'#1A1A1A','--sf-text-secondary':'#6B6B6B','--sf-text-tertiary':'#999999',
+    '--sf-error':'#8B0000','--sf-warning':'#8B7355','--sf-warning-dark':'#6B5744','--sf-success':'#3D6B4F','--sf-info':'#3D3D5C',
+    '--sf-error-bg':'#F5EDED','--sf-warning-bg':'#F5F2ED','--sf-success-bg':'#EDF5EF',
+    '--chart-1':'#3D3D5C','--chart-2':'#8B7355','--chart-3':'#3D6B4F','--chart-4':'#8B0000',
+    '--chart-5':'#999999','--chart-6':'#5C5C8A','--chart-7':'#4A7A7A','--chart-grid':'#EDEDF0'
+  },
+  earth: {
+    '--sf-nav':'#3C3228','--sf-blue':'#7D8B6A','--sf-blue-light':'#F0F2EC',
+    '--sf-bg':'#F4F1EC','--sf-card':'#FDFCFA','--sf-border':'#C4BDB2','--sf-border-light':'#DDD7CD',
+    '--sf-border-subtle':'#EBE8E3','--sf-table-header-bg':'#F7F5F1','--sf-badge-neutral-bg':'#E8E4DD',
+    '--sf-text':'#2C2620','--sf-text-secondary':'#7A7168','--sf-text-tertiary':'#A39B90',
+    '--sf-error':'#A63D2F','--sf-warning':'#C4933B','--sf-warning-dark':'#96712E','--sf-success':'#5C7A52','--sf-info':'#7D8B6A',
+    '--sf-error-bg':'#F9F0ED','--sf-warning-bg':'#FAF5E8','--sf-success-bg':'#EFF4EC',
+    '--chart-1':'#7D8B6A','--chart-2':'#C4933B','--chart-3':'#5C7A52','--chart-4':'#A63D2F',
+    '--chart-5':'#A39B90','--chart-6':'#8E7B6B','--chart-7':'#6B8E8E','--chart-grid':'#EBE8E3'
+  },
+  midnight: {
+    '--sf-nav':'#0D0D12','--sf-blue':'#5B9BD5','--sf-blue-light':'#1C2333',
+    '--sf-bg':'#13131A','--sf-card':'#1C1C26','--sf-border':'#3A3A4A','--sf-border-light':'#2A2A38',
+    '--sf-border-subtle':'#222230','--sf-table-header-bg':'#1A1A24','--sf-badge-neutral-bg':'#2A2A38',
+    '--sf-text':'#E8E8ED','--sf-text-secondary':'#A0A0B0','--sf-text-tertiary':'#6B6B80',
+    '--sf-error':'#E05555','--sf-warning':'#E0A050','--sf-warning-dark':'#CC8833','--sf-success':'#5BAA6A','--sf-info':'#5B9BD5',
+    '--sf-error-bg':'#2D1F1F','--sf-warning-bg':'#2D2A1F','--sf-success-bg':'#1F2D20',
+    '--chart-1':'#5B9BD5','--chart-2':'#E0A050','--chart-3':'#5BAA6A','--chart-4':'#E05555',
+    '--chart-5':'#6B6B80','--chart-6':'#9B7BFF','--chart-7':'#50C4E0','--chart-grid':'#2A2A38'
+  },
+  pastel: {
+    '--sf-nav':'#4A5568','--sf-blue':'#6B8EB5','--sf-blue-light':'#EEF3F9',
+    '--sf-bg':'#F7F5F8','--sf-card':'#FFFFFF','--sf-border':'#D1CDD5','--sf-border-light':'#E6E2EA',
+    '--sf-border-subtle':'#EFECF1','--sf-table-header-bg':'#FAF8FC','--sf-badge-neutral-bg':'#ECEAEE',
+    '--sf-text':'#2D2D3D','--sf-text-secondary':'#6E6E82','--sf-text-tertiary':'#9E9EB0',
+    '--sf-error':'#C47070','--sf-warning':'#C4A46B','--sf-warning-dark':'#A08555','--sf-success':'#6BAA7D','--sf-info':'#6B8EB5',
+    '--sf-error-bg':'#F9F0F0','--sf-warning-bg':'#FAF6ED','--sf-success-bg':'#F0F7F1',
+    '--chart-1':'#6B8EB5','--chart-2':'#C4A46B','--chart-3':'#6BAA7D','--chart-4':'#C47070',
+    '--chart-5':'#9E9EB0','--chart-6':'#9B8BC4','--chart-7':'#6BB5C4','--chart-grid':'#EFECF1'
   }
-});
+};
 
-// Chart B: Depletion Forecast
-new Chart(document.getElementById('depletionChart'), {
-  type: 'line',
-  data: {
-    labels: ['2/12','2/14','2/16','2/18','2/20','2/22','2/24','2/26','2/28','3/2'],
-    datasets: [
-      { label: '예상 재고', data: [45,37,29,21,13,5,0,null,null,null], borderColor: '#BA0517', backgroundColor: 'rgba(186,5,23,0.05)', fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2 },
-      { label: '입고 후', data: [null,null,null,null,null,null,null,null,300,272], borderColor: '#0176D3', backgroundColor: 'rgba(1,118,211,0.05)', fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2, borderDash: [4,4] }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 16, font: { size: 10 } } } },
-    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#F0F0F0' }, border: { display: false }, title: { display: true, text: '수량', font: { size: 10 }, color: '#939393' } } }
-  }
-});
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const chartInstances = {};
+function destroyAllCharts() {
+  Object.keys(chartInstances).forEach(k => { if(chartInstances[k]) { chartInstances[k].destroy(); delete chartInstances[k]; } });
+}
+
+function createStatusTrendChart(t) {
+  chartInstances.statusTrend = new Chart(document.getElementById('statusTrendChart'), {
+    type: 'line',
+    data: {
+      labels: ['1/6','1/13','1/20','1/27','2/3','2/10','2/12'],
+      datasets: [
+        { label: '품절', data: [8,10,9,12,11,14,15], borderColor: t['--chart-4'], backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+        { label: '소진임박', data: [28,32,30,35,38,40,41], borderColor: t['--chart-2'], backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+        { label: '정상', data: [195,192,198,190,188,185,183], borderColor: t['--chart-3'], backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+        { label: '과잉', data: [250,255,260,265,270,273,275], borderColor: t['--chart-5'], backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'bottom', labels: { boxWidth:8, padding:16, font:{size:10}, color:t['--sf-text-secondary'] } } },
+      scales: { x: { grid:{display:false}, ticks:{color:t['--sf-text-secondary']} }, y: { beginAtZero:true, grid:{color:t['--chart-grid']}, border:{display:false}, ticks:{color:t['--sf-text-secondary']} } }
+    }
+  });
+}
+
+function createDepletionChart(t) {
+  chartInstances.depletion = new Chart(document.getElementById('depletionChart'), {
+    type: 'line',
+    data: {
+      labels: ['2/12','2/14','2/16','2/18','2/20','2/22','2/24','2/26','2/28','3/2'],
+      datasets: [
+        { label: '예상 재고', data: [45,37,29,21,13,5,0,null,null,null], borderColor: t['--chart-4'], backgroundColor: hexToRgba(t['--chart-4'],0.05), fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2 },
+        { label: '입고 후', data: [null,null,null,null,null,null,null,null,300,272], borderColor: t['--chart-1'], backgroundColor: hexToRgba(t['--chart-1'],0.05), fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2, borderDash: [4,4] }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'bottom', labels: { boxWidth:8, padding:16, font:{size:10}, color:t['--sf-text-secondary'] } } },
+      scales: { x: { grid:{display:false}, ticks:{color:t['--sf-text-secondary']} }, y: { beginAtZero:true, grid:{color:t['--chart-grid']}, border:{display:false}, title:{display:true, text:'수량', font:{size:10}, color:t['--sf-text-tertiary']}, ticks:{color:t['--sf-text-secondary']} } }
+    }
+  });
+}
+
+function buildAllCharts(t) {
+  createStatusTrendChart(t); createDepletionChart(t);
+}
+
+function applyTheme(name) {
+  const t = THEMES[name];
+  if (!t) return;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  document.querySelectorAll('.theme-swatch').forEach(b => b.classList.toggle('active', b.dataset.theme === name));
+  Chart.defaults.color = t['--sf-text-secondary'];
+  destroyAllCharts();
+  buildAllCharts(t);
+  localStorage.setItem('tobe-admin-theme', name);
+}
+
+(function init() {
+  const saved = localStorage.getItem('tobe-admin-theme') || 'salesforce';
+  applyTheme(saved);
+  document.querySelectorAll('.theme-swatch').forEach(btn => {
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+  });
+})();
 </script>
 
 </body>

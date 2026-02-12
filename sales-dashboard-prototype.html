@@ -11,23 +11,23 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        'sf-nav': '#032D60',
-        'sf-blue': '#0176D3',
-        'sf-blue-light': '#EBF5FE',
-        'sf-border': '#C9C9C9',
-        'sf-border-light': '#E5E5E5',
-        'sf-bg': '#F3F3F3',
-        'sf-card': '#FFFFFF',
-        'sf-text': '#181818',
-        'sf-text-secondary': '#706E6B',
-        'sf-text-tertiary': '#939393',
-        'sf-error': '#BA0517',
-        'sf-warning': '#FE9339',
-        'sf-success': '#2E844A',
-        'sf-info': '#0176D3',
-        'sf-error-bg': '#FEF1EE',
-        'sf-warning-bg': '#FFF8E6',
-        'sf-success-bg': '#EBF7E6',
+        'sf-nav': 'var(--sf-nav)',
+        'sf-blue': 'var(--sf-blue)',
+        'sf-blue-light': 'var(--sf-blue-light)',
+        'sf-border': 'var(--sf-border)',
+        'sf-border-light': 'var(--sf-border-light)',
+        'sf-bg': 'var(--sf-bg)',
+        'sf-card': 'var(--sf-card)',
+        'sf-text': 'var(--sf-text)',
+        'sf-text-secondary': 'var(--sf-text-secondary)',
+        'sf-text-tertiary': 'var(--sf-text-tertiary)',
+        'sf-error': 'var(--sf-error)',
+        'sf-warning': 'var(--sf-warning)',
+        'sf-success': 'var(--sf-success)',
+        'sf-info': 'var(--sf-info)',
+        'sf-error-bg': 'var(--sf-error-bg)',
+        'sf-warning-bg': 'var(--sf-warning-bg)',
+        'sf-success-bg': 'var(--sf-success-bg)',
       },
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans KR', 'sans-serif'],
@@ -40,42 +40,58 @@ tailwind.config = {
 }
 </script>
 <style>
-  body { background: #F3F3F3; -webkit-font-smoothing: antialiased; font-size: 14px; }
-  .sf-card { background: #fff; border: 1px solid #E5E5E5; border-radius: 4px; }
-  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid #E5E5E5; }
+  :root {
+    --sf-nav: #032D60; --sf-blue: #0176D3; --sf-blue-light: #EBF5FE;
+    --sf-bg: #F3F3F3; --sf-card: #FFFFFF; --sf-border: #C9C9C9;
+    --sf-border-light: #E5E5E5; --sf-border-subtle: #F0F0F0;
+    --sf-table-header-bg: #FAFAFB; --sf-badge-neutral-bg: #EEEEEE;
+    --sf-text: #181818; --sf-text-secondary: #706E6B; --sf-text-tertiary: #939393;
+    --sf-error: #BA0517; --sf-warning: #FE9339; --sf-warning-dark: #B95D08;
+    --sf-success: #2E844A; --sf-info: #0176D3;
+    --sf-error-bg: #FEF1EE; --sf-warning-bg: #FFF8E6; --sf-success-bg: #EBF7E6;
+    --chart-1: #0176D3; --chart-2: #FE9339; --chart-3: #2E844A;
+    --chart-4: #BA0517; --chart-5: #939393; --chart-6: #7B61FF; --chart-7: #00B4D8;
+    --chart-grid: #F0F0F0;
+  }
+  body { background: var(--sf-bg); -webkit-font-smoothing: antialiased; font-size: 14px; color: var(--sf-text); }
+  .sf-card { background: var(--sf-card); border: 1px solid var(--sf-border-light); border-radius: 4px; }
+  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid var(--sf-border-light); }
   .sf-card-body { padding: 18px; }
-  .sf-tab { padding: 12px 18px; font-size: 14px; color: #706E6B; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
-  .sf-tab:hover { color: #181818; }
-  .sf-tab.active { color: #0176D3; border-bottom-color: #0176D3; font-weight: 600; }
+  .sf-tab { padding: 12px 18px; font-size: 14px; color: var(--sf-text-secondary); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .sf-tab:hover { color: var(--sf-text); }
+  .sf-tab.active { color: var(--sf-blue); border-bottom-color: var(--sf-blue); font-weight: 600; }
   .sf-tab-content { display: none; }
   .sf-tab-content.active { display: block; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-  .sf-table th { font-size: 12px; font-weight: 600; color: #706E6B; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: #FAFAFB; border-bottom: 1px solid #E5E5E5; text-align: left; }
-  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid #F0F0F0; color: #181818; }
-  .sf-table tr:hover td { background: #F3F3F3; }
+  .sf-table th { font-size: 12px; font-weight: 600; color: var(--sf-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: var(--sf-table-header-bg); border-bottom: 1px solid var(--sf-border-light); text-align: left; }
+  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid var(--sf-border-subtle); color: var(--sf-text); }
+  .sf-table tr:hover td { background: var(--sf-bg); }
   .sf-badge { font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 500; display: inline-block; }
-  .period-btn { padding: 4px 14px; font-size: 12px; border-radius: 4px; color: #706E6B; cursor: pointer; border: 1px solid #E5E5E5; background: #fff; }
-  .period-btn:hover { background: #F3F3F3; }
-  .period-btn.active { background: #0176D3; color: white; font-weight: 600; border-color: #0176D3; }
-  .progress-bar-bg { background: #E5E5E5; border-radius: 4px; height: 8px; overflow: hidden; }
+  .period-btn { padding: 4px 14px; font-size: 12px; border-radius: 4px; color: var(--sf-text-secondary); cursor: pointer; border: 1px solid var(--sf-border-light); background: var(--sf-card); }
+  .period-btn:hover { background: var(--sf-bg); }
+  .period-btn.active { background: var(--sf-blue); color: white; font-weight: 600; border-color: var(--sf-blue); }
+  .progress-bar-bg { background: var(--sf-border-light); border-radius: 4px; height: 8px; overflow: hidden; }
   .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
   .kpi-tile { transition: box-shadow 0.15s; cursor: pointer; }
   .kpi-tile:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .chart-container { position: relative; height: 280px; }
   .doughnut-container { position: relative; height: 260px; }
-  .insight-box { border-left: 3px solid #FE9339; background: #FFF8E6; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 13px; color: #181818; }
-  .insight-box.danger { border-left-color: #BA0517; background: #FEF1EE; }
-  .insight-box.info { border-left-color: #0176D3; background: #EBF5FE; }
+  .insight-box { border-left: 3px solid var(--sf-warning); background: var(--sf-warning-bg); padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 13px; color: var(--sf-text); }
+  .insight-box.danger { border-left-color: var(--sf-error); background: var(--sf-error-bg); }
+  .insight-box.info { border-left-color: var(--sf-info); background: var(--sf-blue-light); }
   .collapsible-header { cursor: pointer; user-select: none; }
   .collapsible-header .chevron { transition: transform 0.2s; }
   .collapsible-header.open .chevron { transform: rotate(180deg); }
   .settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .theme-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .theme-swatch:hover { border-color: rgba(255,255,255,0.8); }
+  .theme-swatch.active { border-color: white !important; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); transform: scale(1.15); }
 
   @media (max-width: 768px) {
     main { padding: 10px 8px; gap: 10px; }
     .sf-card-header { padding: 12px 14px; }
     .sf-card-body { padding: 12px; }
-    nav .ml-auto { display: none; }
+    nav .nav-meta { display: none; }
     .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .mobile-table-wrap .sf-table { min-width: 700px; }
     .chart-container { height: 220px !important; }
@@ -87,25 +103,35 @@ tailwind.config = {
   }
 </style>
 </head>
-<body class="min-h-screen text-sf-text">
+<body class="min-h-screen">
 
 <!-- Navigation Bar -->
 <nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
   <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
   <span class="text-white/60 text-xs">매출 분석 대시보드</span>
-  <div class="ml-auto text-xs text-white/50">2026. 2. 12. | 매출 현황 | 4개 브랜드</div>
+  <div class="ml-auto flex items-center gap-3">
+    <div class="flex items-center gap-1.5" id="themeSwitcher">
+      <button data-theme="salesforce" title="Salesforce" class="theme-swatch active" style="background:linear-gradient(135deg,#032D60 50%,#0176D3 50%)"></button>
+      <button data-theme="monochrome" title="Monochrome" class="theme-swatch" style="background:linear-gradient(135deg,#1A1A2E 50%,#3D3D5C 50%)"></button>
+      <button data-theme="earth" title="Earth Tone" class="theme-swatch" style="background:linear-gradient(135deg,#3C3228 50%,#7D8B6A 50%)"></button>
+      <button data-theme="midnight" title="Midnight" class="theme-swatch" style="background:linear-gradient(135deg,#0D0D12 50%,#5B9BD5 50%)"></button>
+      <button data-theme="pastel" title="Pastel" class="theme-swatch" style="background:linear-gradient(135deg,#4A5568 50%,#6B8EB5 50%)"></button>
+    </div>
+    <span class="text-white/20 text-xs">|</span>
+    <div class="text-xs text-white/50 nav-meta">2026. 2. 12. | 매출 현황 | 4개 브랜드</div>
+  </div>
 </nav>
 
 <!-- Filter Bar -->
-<div class="bg-white border-b border-sf-border-light px-4 py-2.5">
+<div class="bg-sf-card border-b border-sf-border-light px-4 py-2.5">
   <div class="max-w-[1440px] mx-auto flex flex-wrap gap-2 items-center">
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text">
       <option>전체 브랜드</option><option>키크론</option><option>MOZA</option><option>캐논</option><option>지티기어</option><option>에이퍼</option>
     </select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text">
       <option>전체 채널</option><option>ON (온라인)</option><option>OFF (오프라인)</option>
     </select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text">
       <option>전체 담당자</option><option>신진우</option><option>문소현</option><option>김성은</option><option>박혜경</option>
     </select>
     <div class="flex items-center gap-1 ml-2">
@@ -116,7 +142,7 @@ tailwind.config = {
       <button class="period-btn" data-period="6m">6달</button>
       <button class="period-btn" data-period="1y">1년</button>
     </div>
-    <input type="month" value="2026-02" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text ml-2">
+    <input type="month" value="2026-02" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text ml-2">
     <button class="text-xs bg-sf-blue text-white px-4 py-1.5 rounded hover:bg-blue-700 font-medium">분석</button>
   </div>
 </div>
@@ -332,8 +358,8 @@ tailwind.config = {
         <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">채널 매출 비중</h3>
         <div class="doughnut-container"><canvas id="channelDoughnut"></canvas></div>
         <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:#0176D3"></span>ON (온라인) 8.72억 (71.7%)</div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:#FE9339"></span>OFF (오프라인) 3.44억 (28.3%)</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:var(--chart-1)"></span>ON (온라인) 8.72억 (71.7%)</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:var(--chart-2)"></span>OFF (오프라인) 3.44억 (28.3%)</div>
         </div>
       </div>
       <!-- 쇼핑몰 Top 10 -->
@@ -663,7 +689,7 @@ tailwind.config = {
             <div><b>플레이시트</b> — 레이싱 콕핏</div>
             <span class="text-sf-error font-bold">-50.4% MoM</span>
           </div>
-          <div class="text-sf-text-secondary mt-2 p-2 bg-white rounded">
+          <div class="text-sf-text-secondary mt-2 p-2 bg-sf-card rounded">
             ℹ 시뮬레이터 카테고리 3개 브랜드 동시 하락 → 시장 위축 또는 계절성 확인 필요
           </div>
         </div>
@@ -906,28 +932,28 @@ tailwind.config = {
             <span>목표달성률 &lt;70% 시 알림</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span>일매출 전주동요일 대비 -30%</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span>채널 HHI 집중도 1,500+ 경고</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span>브랜드 MoM -40% 이상 하락</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
         </div>
@@ -943,21 +969,21 @@ tailwind.config = {
             <span>일간 요약 (매일 09:00)</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span>주간 분석 (월요일 09:00)</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span>월간 리뷰 (매월 1일 09:00)</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
-              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-sf-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
@@ -1007,7 +1033,116 @@ tailwind.config = {
 
 </main>
 
+
 <script>
+
+// ===== Theme Switcher =====
+const themes = {
+  salesforce: {
+    '--sf-nav': '#032D60', '--sf-blue': '#0176D3', '--sf-blue-light': '#EBF5FE',
+    '--sf-bg': '#F3F3F3', '--sf-card': '#FFFFFF', '--sf-border': '#C9C9C9',
+    '--sf-border-light': '#E5E5E5', '--sf-border-subtle': '#F0F0F0',
+    '--sf-table-header-bg': '#FAFAFB', '--sf-badge-neutral-bg': '#EEEEEE',
+    '--sf-text': '#181818', '--sf-text-secondary': '#706E6B', '--sf-text-tertiary': '#939393',
+    '--sf-error': '#BA0517', '--sf-warning': '#FE9339', '--sf-warning-dark': '#B95D08',
+    '--sf-success': '#2E844A', '--sf-info': '#0176D3',
+    '--sf-error-bg': '#FEF1EE', '--sf-warning-bg': '#FFF8E6', '--sf-success-bg': '#EBF7E6',
+    '--chart-1': '#0176D3', '--chart-2': '#FE9339', '--chart-3': '#2E844A',
+    '--chart-4': '#BA0517', '--chart-5': '#939393', '--chart-6': '#7B61FF', '--chart-7': '#00B4D8',
+    '--chart-grid': '#F0F0F0'
+  },
+  monochrome: {
+    '--sf-nav': '#1A1A2E', '--sf-blue': '#3D3D5C', '--sf-blue-light': '#EEEEF2',
+    '--sf-bg': '#F5F5F7', '--sf-card': '#FFFFFF', '--sf-border': '#C0C0C8',
+    '--sf-border-light': '#DDDDE3', '--sf-border-subtle': '#EEEEEF',
+    '--sf-table-header-bg': '#F8F8FA', '--sf-badge-neutral-bg': '#E8E8EC',
+    '--sf-text': '#1A1A2E', '--sf-text-secondary': '#6B6B80', '--sf-text-tertiary': '#9999A8',
+    '--sf-error': '#8B0000', '--sf-warning': '#8B7355', '--sf-warning-dark': '#6B5640',
+    '--sf-success': '#2E5A3E', '--sf-info': '#3D3D5C',
+    '--sf-error-bg': '#F5EDED', '--sf-warning-bg': '#F5F2ED', '--sf-success-bg': '#EDF5EF',
+    '--chart-1': '#3D3D5C', '--chart-2': '#8B8BAD', '--chart-3': '#5C5C7A',
+    '--chart-4': '#2E2E4A', '--chart-5': '#A0A0B8', '--chart-6': '#6B6B90', '--chart-7': '#4A4A6E',
+    '--chart-grid': '#EEEEEF'
+  },
+  earth: {
+    '--sf-nav': '#3C3228', '--sf-blue': '#7D8B6A', '--sf-blue-light': '#F0F2EC',
+    '--sf-bg': '#F5F3F0', '--sf-card': '#FFFEFA', '--sf-border': '#C4B9A8',
+    '--sf-border-light': '#DDD5C8', '--sf-border-subtle': '#EDE8E0',
+    '--sf-table-header-bg': '#FAF8F5', '--sf-badge-neutral-bg': '#E8E2D8',
+    '--sf-text': '#2C2418', '--sf-text-secondary': '#7A6F60', '--sf-text-tertiary': '#A09580',
+    '--sf-error': '#9B3B30', '--sf-warning': '#C08840', '--sf-warning-dark': '#8B6530',
+    '--sf-success': '#5A7A50', '--sf-info': '#7D8B6A',
+    '--sf-error-bg': '#F5EEEC', '--sf-warning-bg': '#F8F2E8', '--sf-success-bg': '#EEF4EC',
+    '--chart-1': '#7D8B6A', '--chart-2': '#C08840', '--chart-3': '#5A7A50',
+    '--chart-4': '#9B3B30', '--chart-5': '#A09580', '--chart-6': '#8B6E50', '--chart-7': '#6A8B7D',
+    '--chart-grid': '#EDE8E0'
+  },
+  midnight: {
+    '--sf-nav': '#0D0D12', '--sf-blue': '#5B9BD5', '--sf-blue-light': '#1A2540',
+    '--sf-bg': '#12141C', '--sf-card': '#1A1D28', '--sf-border': '#2A2D3A',
+    '--sf-border-light': '#252838', '--sf-border-subtle': '#1E2130',
+    '--sf-table-header-bg': '#1E2130', '--sf-badge-neutral-bg': '#252838',
+    '--sf-text': '#E8E8F0', '--sf-text-secondary': '#8888A0', '--sf-text-tertiary': '#606078',
+    '--sf-error': '#E06060', '--sf-warning': '#E0A848', '--sf-warning-dark': '#C08830',
+    '--sf-success': '#50B870', '--sf-info': '#5B9BD5',
+    '--sf-error-bg': '#2A1820', '--sf-warning-bg': '#2A2418', '--sf-success-bg': '#182A1E',
+    '--chart-1': '#5B9BD5', '--chart-2': '#E0A848', '--chart-3': '#50B870',
+    '--chart-4': '#E06060', '--chart-5': '#8888A0', '--chart-6': '#B088E0', '--chart-7': '#50C8D0',
+    '--chart-grid': '#252838'
+  },
+  pastel: {
+    '--sf-nav': '#4A5568', '--sf-blue': '#6B8EB5', '--sf-blue-light': '#EBF0F5',
+    '--sf-bg': '#F7F5F2', '--sf-card': '#FFFFFF', '--sf-border': '#C8C8D0',
+    '--sf-border-light': '#E0DED8', '--sf-border-subtle': '#EDEAE5',
+    '--sf-table-header-bg': '#FAFAF8', '--sf-badge-neutral-bg': '#E8E8E0',
+    '--sf-text': '#2D3748', '--sf-text-secondary': '#718096', '--sf-text-tertiary': '#A0AEC0',
+    '--sf-error': '#C05050', '--sf-warning': '#C8985C', '--sf-warning-dark': '#A07840',
+    '--sf-success': '#5C9070', '--sf-info': '#6B8EB5',
+    '--sf-error-bg': '#FDF0F0', '--sf-warning-bg': '#FDF8F0', '--sf-success-bg': '#F0FDF5',
+    '--chart-1': '#6B8EB5', '--chart-2': '#C8985C', '--chart-3': '#5C9070',
+    '--chart-4': '#C05050', '--chart-5': '#A0AEC0', '--chart-6': '#9B8EC0', '--chart-7': '#5CACC8',
+    '--chart-grid': '#EDEAE5'
+  }
+};
+
+function applyTheme(themeName) {
+  const theme = themes[themeName];
+  if (!theme) return;
+  const root = document.documentElement;
+  Object.entries(theme).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+  // Update active swatch
+  document.querySelectorAll('#themeSwitcher .theme-swatch').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === themeName);
+  });
+  // Rebuild charts with new colors
+  if (typeof rebuildCharts === 'function') rebuildCharts();
+}
+
+document.querySelectorAll('#themeSwitcher .theme-swatch').forEach(btn => {
+  btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+});
+
+
+// ===== Dynamic Chart Colors =====
+function getChartColor(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+function getChartColors() {
+  return {
+    sfBlue: getChartColor('--chart-1'),
+    sfOrange: getChartColor('--chart-2'),
+    sfGreen: getChartColor('--chart-3'),
+    sfRed: getChartColor('--chart-4'),
+    sfGray: getChartColor('--chart-5'),
+    sfPurple: getChartColor('--chart-6'),
+    sfTeal: getChartColor('--chart-7'),
+    gridColor: getChartColor('--chart-grid'),
+    textColor: getChartColor('--sf-text-secondary')
+  };
+}
+
 // ===== Period Buttons =====
 document.querySelectorAll('.period-btn[data-period]').forEach(btn => {
   btn.addEventListener('click', function() {
@@ -1050,255 +1185,254 @@ function toggleSettings() {
   }
 }
 
-// ===== Chart.js Configuration =====
-const sfBlue = '#0176D3';
-const sfOrange = '#FE9339';
-const sfGreen = '#2E844A';
-const sfRed = '#BA0517';
-const sfGray = '#939393';
-const sfPurple = '#7B61FF';
-const sfTeal = '#00B4D8';
-
-// Daily Trend Chart
-const dailyCtx = document.getElementById('dailyTrendChart').getContext('2d');
-new Chart(dailyCtx, {
-  type: 'bar',
-  data: {
-    labels: ['2/3(월)','2/4(화)','2/5(수)','2/6(목)','2/7(금)','2/8(토)','2/9(일)','2/10(월)','2/11(화)','2/12(수)'],
-    datasets: [
-      {
-        label: '일별 매출(억)',
-        data: [1.82, 1.45, 1.21, 1.34, 1.08, 0.54, 0.21, 1.67, 1.38, 1.45],
-        backgroundColor: 'rgba(1,118,211,0.6)',
-        borderColor: sfBlue,
-        borderWidth: 1,
-        borderRadius: 3,
-        order: 2
-      },
-      {
-        label: '7일 이동평균',
-        data: [null, null, null, null, null, null, 1.09, 1.07, 1.05, 1.08],
-        type: 'line',
-        borderColor: sfOrange,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointBackgroundColor: sfOrange,
-        fill: false,
-        tension: 0.3,
-        order: 1
-      }
-    ]
+// ===== Theme Definitions =====
+const THEMES = {
+  salesforce: {
+    '--sf-nav':'#032D60','--sf-blue':'#0176D3','--sf-blue-light':'#EBF5FE',
+    '--sf-bg':'#F3F3F3','--sf-card':'#FFFFFF','--sf-border':'#C9C9C9','--sf-border-light':'#E5E5E5',
+    '--sf-border-subtle':'#F0F0F0','--sf-table-header-bg':'#FAFAFB','--sf-badge-neutral-bg':'#EEEEEE',
+    '--sf-text':'#181818','--sf-text-secondary':'#706E6B','--sf-text-tertiary':'#939393',
+    '--sf-error':'#BA0517','--sf-warning':'#FE9339','--sf-warning-dark':'#B95D08','--sf-success':'#2E844A','--sf-info':'#0176D3',
+    '--sf-error-bg':'#FEF1EE','--sf-warning-bg':'#FFF8E6','--sf-success-bg':'#EBF7E6',
+    '--chart-1':'#0176D3','--chart-2':'#FE9339','--chart-3':'#2E844A','--chart-4':'#BA0517',
+    '--chart-5':'#939393','--chart-6':'#7B61FF','--chart-7':'#00B4D8','--chart-grid':'#F0F0F0'
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    }
-  }
-});
-
-// Monthly Trend Chart
-const monthlyCtx = document.getElementById('monthlyTrendChart').getContext('2d');
-new Chart(monthlyCtx, {
-  type: 'bar',
-  data: {
-    labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-    datasets: [
-      {
-        label: '2026년',
-        data: [24.3, 12.2, null, null, null, null, null, null, null, null, null, null],
-        backgroundColor: 'rgba(1,118,211,0.7)',
-        borderColor: sfBlue,
-        borderWidth: 1,
-        borderRadius: 3
-      },
-      {
-        label: '2025년',
-        data: [22.1, 11.2, 18.7, 21.3, 19.8, 17.2, 16.4, 15.8, 18.9, 22.4, 24.8, 28.6],
-        backgroundColor: 'rgba(147,147,147,0.3)',
-        borderColor: sfGray,
-        borderWidth: 1,
-        borderRadius: 3
-      }
-    ]
+  monochrome: {
+    '--sf-nav':'#1A1A2E','--sf-blue':'#3D3D5C','--sf-blue-light':'#EEEEF2',
+    '--sf-bg':'#F5F5F7','--sf-card':'#FFFFFF','--sf-border':'#C8C8CC','--sf-border-light':'#E2E2E6',
+    '--sf-border-subtle':'#EDEDF0','--sf-table-header-bg':'#F8F8FA','--sf-badge-neutral-bg':'#ECECEC',
+    '--sf-text':'#1A1A1A','--sf-text-secondary':'#6B6B6B','--sf-text-tertiary':'#999999',
+    '--sf-error':'#8B0000','--sf-warning':'#8B7355','--sf-warning-dark':'#6B5744','--sf-success':'#3D6B4F','--sf-info':'#3D3D5C',
+    '--sf-error-bg':'#F5EDED','--sf-warning-bg':'#F5F2ED','--sf-success-bg':'#EDF5EF',
+    '--chart-1':'#3D3D5C','--chart-2':'#8B7355','--chart-3':'#3D6B4F','--chart-4':'#8B0000',
+    '--chart-5':'#999999','--chart-6':'#5C5C8A','--chart-7':'#4A7A7A','--chart-grid':'#EDEDF0'
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    }
-  }
-});
-
-// Yearly Trend Chart
-const yearlyCtx = document.getElementById('yearlyTrendChart').getContext('2d');
-new Chart(yearlyCtx, {
-  type: 'bar',
-  data: {
-    labels: ['1월','2월','3월','4월','5월','6월'],
-    datasets: [
-      { label: '2022', data: [6.2, 4.8, 7.1, 8.3, 7.5, 6.1], backgroundColor: 'rgba(147,147,147,0.2)', borderRadius: 2 },
-      { label: '2023', data: [9.4, 7.2, 10.8, 12.1, 11.3, 9.8], backgroundColor: 'rgba(147,147,147,0.35)', borderRadius: 2 },
-      { label: '2024', data: [15.2, 9.8, 14.3, 16.7, 15.1, 13.2], backgroundColor: 'rgba(147,147,147,0.5)', borderRadius: 2 },
-      { label: '2025', data: [22.1, 11.2, 18.7, 21.3, 19.8, 17.2], backgroundColor: 'rgba(254,147,57,0.5)', borderRadius: 2 },
-      { label: '2026', data: [24.3, 12.2, null, null, null, null], backgroundColor: 'rgba(1,118,211,0.7)', borderRadius: 2 }
-    ]
+  earth: {
+    '--sf-nav':'#3C3228','--sf-blue':'#7D8B6A','--sf-blue-light':'#F0F2EC',
+    '--sf-bg':'#F4F1EC','--sf-card':'#FDFCFA','--sf-border':'#C4BDB2','--sf-border-light':'#DDD7CD',
+    '--sf-border-subtle':'#EBE8E3','--sf-table-header-bg':'#F7F5F1','--sf-badge-neutral-bg':'#E8E4DD',
+    '--sf-text':'#2C2620','--sf-text-secondary':'#7A7168','--sf-text-tertiary':'#A39B90',
+    '--sf-error':'#A63D2F','--sf-warning':'#C4933B','--sf-warning-dark':'#96712E','--sf-success':'#5C7A52','--sf-info':'#7D8B6A',
+    '--sf-error-bg':'#F9F0ED','--sf-warning-bg':'#FAF5E8','--sf-success-bg':'#EFF4EC',
+    '--chart-1':'#7D8B6A','--chart-2':'#C4933B','--chart-3':'#5C7A52','--chart-4':'#A63D2F',
+    '--chart-5':'#A39B90','--chart-6':'#8E7B6B','--chart-7':'#6B8E8E','--chart-grid':'#EBE8E3'
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    }
-  }
-});
-
-// Channel Doughnut
-const chDoughCtx = document.getElementById('channelDoughnut').getContext('2d');
-new Chart(chDoughCtx, {
-  type: 'doughnut',
-  data: {
-    labels: ['ON (온라인)', 'OFF (오프라인)'],
-    datasets: [{
-      data: [8.72, 3.44],
-      backgroundColor: [sfBlue, sfOrange],
-      borderWidth: 0
-    }]
+  midnight: {
+    '--sf-nav':'#0D0D12','--sf-blue':'#5B9BD5','--sf-blue-light':'#1C2333',
+    '--sf-bg':'#13131A','--sf-card':'#1C1C26','--sf-border':'#3A3A4A','--sf-border-light':'#2A2A38',
+    '--sf-border-subtle':'#222230','--sf-table-header-bg':'#1A1A24','--sf-badge-neutral-bg':'#2A2A38',
+    '--sf-text':'#E8E8ED','--sf-text-secondary':'#A0A0B0','--sf-text-tertiary':'#6B6B80',
+    '--sf-error':'#E05555','--sf-warning':'#E0A050','--sf-warning-dark':'#CC8833','--sf-success':'#5BAA6A','--sf-info':'#5B9BD5',
+    '--sf-error-bg':'#2D1F1F','--sf-warning-bg':'#2D2A1F','--sf-success-bg':'#1F2D20',
+    '--chart-1':'#5B9BD5','--chart-2':'#E0A050','--chart-3':'#5BAA6A','--chart-4':'#E05555',
+    '--chart-5':'#6B6B80','--chart-6':'#9B7BFF','--chart-7':'#50C4E0','--chart-grid':'#2A2A38'
   },
-  options: {
-    responsive: true, maintainAspectRatio: false, cutout: '65%',
-    plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 16, boxWidth: 12 } }
-    }
+  pastel: {
+    '--sf-nav':'#4A5568','--sf-blue':'#6B8EB5','--sf-blue-light':'#EEF3F9',
+    '--sf-bg':'#F7F5F8','--sf-card':'#FFFFFF','--sf-border':'#D1CDD5','--sf-border-light':'#E6E2EA',
+    '--sf-border-subtle':'#EFECF1','--sf-table-header-bg':'#FAF8FC','--sf-badge-neutral-bg':'#ECEAEE',
+    '--sf-text':'#2D2D3D','--sf-text-secondary':'#6E6E82','--sf-text-tertiary':'#9E9EB0',
+    '--sf-error':'#C47070','--sf-warning':'#C4A46B','--sf-warning-dark':'#A08555','--sf-success':'#6BAA7D','--sf-info':'#6B8EB5',
+    '--sf-error-bg':'#F9F0F0','--sf-warning-bg':'#FAF6ED','--sf-success-bg':'#F0F7F1',
+    '--chart-1':'#6B8EB5','--chart-2':'#C4A46B','--chart-3':'#6BAA7D','--chart-4':'#C47070',
+    '--chart-5':'#9E9EB0','--chart-6':'#9B8BC4','--chart-7':'#6BB5C4','--chart-grid':'#EFECF1'
   }
-});
+};
 
-// AOV Chart
-const aovCtx = document.getElementById('aovChart').getContext('2d');
-new Chart(aovCtx, {
-  type: 'bar',
-  data: {
-    labels: ['쿠팡(지티)', '밸류포인트', '글로와이드', '브랜드스토어', '퍼스트몰', '쿠팡(키크론)', 'ESM지마켓', '네이버스마트'],
-    datasets: [{
-      label: 'AOV (만원)',
-      data: [109.6, 88.5, 55.9, 23.0, 21.7, 20.6, 17.4, 14.3],
-      backgroundColor: function(ctx) {
-        const i = ctx.dataIndex;
-        return i < 3 ? 'rgba(254,147,57,0.6)' : 'rgba(1,118,211,0.6)';
-      },
-      borderRadius: 3
-    }]
-  },
-  options: {
-    indexAxis: 'y',
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '만' } },
-      y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-    }
-  }
-});
+// ===== Utility =====
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function getThemeColor(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
 
-// Brand Doughnut
-const brandCtx = document.getElementById('brandDoughnut').getContext('2d');
-new Chart(brandCtx, {
-  type: 'doughnut',
-  data: {
-    labels: ['키크론 51.1%', '지티기어 29.9%', '캐논 17.9%', 'MOZA 4.4%', '파나텍 2.3%', '에이퍼 1.2%', '기타 1.5%'],
-    datasets: [{
-      data: [6.21, 3.63, 2.18, 0.53, 0.28, 0.14, 0.18],
-      backgroundColor: [sfBlue, sfOrange, sfGreen, sfRed, sfPurple, sfTeal, sfGray],
-      borderWidth: 0
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false, cutout: '60%',
-    plugins: {
-      legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10, boxWidth: 10 } }
-    }
-  }
-});
+// ===== Chart Instances Registry =====
+const chartInstances = {};
+function destroyAllCharts() {
+  Object.keys(chartInstances).forEach(k => { if(chartInstances[k]) { chartInstances[k].destroy(); delete chartInstances[k]; } });
+}
 
-// Gap Analysis Chart (수량비중 vs 매출비중)
-const gapCtx = document.getElementById('gapChart').getContext('2d');
-new Chart(gapCtx, {
-  type: 'bar',
-  data: {
-    labels: ['키크론', '지티기어', '캐논', 'MOZA', '에이퍼', '파나텍'],
-    datasets: [
-      {
-        label: '수량 비중(%)',
-        data: [57.9, 21.3, 12.6, 0.8, 4.4, 0.3],
-        backgroundColor: 'rgba(1,118,211,0.5)',
-        borderRadius: 3
-      },
-      {
-        label: '매출 비중(%)',
-        data: [51.1, 29.9, 17.9, 4.4, 1.2, 2.3],
-        backgroundColor: 'rgba(254,147,57,0.5)',
-        borderRadius: 3
-      }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '%' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+// ===== Chart Creation Functions =====
+function createDailyTrendChart(t) {
+  const ctx = document.getElementById('dailyTrendChart').getContext('2d');
+  chartInstances.daily = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['2/3(월)','2/4(화)','2/5(수)','2/6(목)','2/7(금)','2/8(토)','2/9(일)','2/10(월)','2/11(화)','2/12(수)'],
+      datasets: [
+        { label: '일별 매출(억)', data: [1.82,1.45,1.21,1.34,1.08,0.54,0.21,1.67,1.38,1.45], backgroundColor: hexToRgba(t['--chart-1'],0.6), borderColor: t['--chart-1'], borderWidth: 1, borderRadius: 3, order: 2 },
+        { label: '7일 이동평균', data: [null,null,null,null,null,null,1.09,1.07,1.05,1.08], type:'line', borderColor: t['--chart-2'], borderWidth: 2, pointRadius: 3, pointBackgroundColor: t['--chart-2'], fill: false, tension: 0.3, order: 1 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'top', labels: { font:{size:11}, boxWidth:12, padding:12, color: t['--sf-text-secondary'] } } },
+      scales: { y: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:11}, color:t['--sf-text-secondary'], callback:v=>v+'억'} }, x: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
     }
-  }
-});
+  });
+}
 
-// Model Top 5 Chart
-const modelCtx = document.getElementById('modelTopChart').getContext('2d');
-new Chart(modelCtx, {
-  type: 'line',
-  data: {
-    labels: ['10월', '11월', '12월', '1월', '2월'],
-    datasets: [
-      { label: 'K MAX', data: [0.82, 0.95, 1.08, 1.26, 1.42], borderColor: sfBlue, backgroundColor: sfBlue, pointRadius: 3, tension: 0.3, borderWidth: 2 },
-      { label: 'K PRO SE', data: [1.31, 1.28, 1.22, 1.29, 1.18], borderColor: sfOrange, backgroundColor: sfOrange, pointRadius: 3, tension: 0.3, borderWidth: 2 },
-      { label: 'K HE', data: [0.41, 0.52, 0.68, 0.79, 0.97], borderColor: sfGreen, backgroundColor: sfGreen, pointRadius: 3, tension: 0.3, borderWidth: 2 },
-      { label: 'K PRO', data: [1.12, 1.08, 1.01, 0.96, 0.82], borderColor: sfRed, backgroundColor: sfRed, pointRadius: 3, tension: 0.3, borderWidth: 2, borderDash: [4,2] },
-      { label: 'K SE', data: [0.68, 0.72, 0.74, 0.75, 0.71], borderColor: sfGray, backgroundColor: sfGray, pointRadius: 3, tension: 0.3, borderWidth: 2 }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '억' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+function createMonthlyTrendChart(t) {
+  const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+  chartInstances.monthly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+      datasets: [
+        { label: '2026년', data: [24.3,12.2,null,null,null,null,null,null,null,null,null,null], backgroundColor: hexToRgba(t['--chart-1'],0.7), borderColor: t['--chart-1'], borderWidth: 1, borderRadius: 3 },
+        { label: '2025년', data: [22.1,11.2,18.7,21.3,19.8,17.2,16.4,15.8,18.9,22.4,24.8,28.6], backgroundColor: hexToRgba(t['--chart-5'],0.3), borderColor: t['--chart-5'], borderWidth: 1, borderRadius: 3 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'top', labels: { font:{size:11}, boxWidth:12, padding:12, color: t['--sf-text-secondary'] } } },
+      scales: { y: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:11}, color:t['--sf-text-secondary'], callback:v=>v+'억'} }, x: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
     }
-  }
-});
+  });
+}
 
-// Accessory Doughnut
-const accCtx = document.getElementById('accessoryDoughnut').getContext('2d');
-new Chart(accCtx, {
-  type: 'doughnut',
-  data: {
-    labels: ['마우스', '실리콘팜레스트', '키캡', '더스트커버', '스위치', '기타'],
-    datasets: [{
-      data: [32, 22, 18, 12, 9, 7],
-      backgroundColor: [sfBlue, sfOrange, sfGreen, sfPurple, sfTeal, sfGray],
-      borderWidth: 0
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false, cutout: '55%',
-    plugins: {
-      legend: { position: 'right', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } }
+function createYearlyTrendChart(t) {
+  const ctx = document.getElementById('yearlyTrendChart').getContext('2d');
+  chartInstances.yearly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['1월','2월','3월','4월','5월','6월'],
+      datasets: [
+        { label: '2022', data: [6.2,4.8,7.1,8.3,7.5,6.1], backgroundColor: hexToRgba(t['--chart-5'],0.2), borderRadius: 2 },
+        { label: '2023', data: [9.4,7.2,10.8,12.1,11.3,9.8], backgroundColor: hexToRgba(t['--chart-5'],0.35), borderRadius: 2 },
+        { label: '2024', data: [15.2,9.8,14.3,16.7,15.1,13.2], backgroundColor: hexToRgba(t['--chart-5'],0.5), borderRadius: 2 },
+        { label: '2025', data: [22.1,11.2,18.7,21.3,19.8,17.2], backgroundColor: hexToRgba(t['--chart-2'],0.5), borderRadius: 2 },
+        { label: '2026', data: [24.3,12.2,null,null,null,null], backgroundColor: hexToRgba(t['--chart-1'],0.7), borderRadius: 2 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'top', labels: { font:{size:10}, boxWidth:10, padding:8, color: t['--sf-text-secondary'] } } },
+      scales: { y: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:11}, color:t['--sf-text-secondary'], callback:v=>v+'억'} }, x: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
     }
-  }
-});
+  });
+}
+
+function createChannelDoughnut(t) {
+  const ctx = document.getElementById('channelDoughnut').getContext('2d');
+  chartInstances.channel = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['ON (온라인)','OFF (오프라인)'], datasets: [{ data: [8.72,3.44], backgroundColor: [t['--chart-1'],t['--chart-2']], borderWidth: 0 }] },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins: { legend: { position:'bottom', labels: { font:{size:11}, padding:16, boxWidth:12, color: t['--sf-text-secondary'] } } }
+    }
+  });
+}
+
+function createAovChart(t) {
+  const ctx = document.getElementById('aovChart').getContext('2d');
+  const c1 = hexToRgba(t['--chart-2'],0.6), c2 = hexToRgba(t['--chart-1'],0.6);
+  chartInstances.aov = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['쿠팡(지티)','밸류포인트','글로와이드','브랜드스토어','퍼스트몰','쿠팡(키크론)','ESM지마켓','네이버스마트'],
+      datasets: [{ label: 'AOV (만원)', data: [109.6,88.5,55.9,23.0,21.7,20.6,17.4,14.3], backgroundColor: function(ctx){ return ctx.dataIndex < 3 ? c1 : c2; }, borderRadius: 3 }]
+    },
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { display:false } },
+      scales: { x: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:10}, color:t['--sf-text-secondary'], callback:v=>v+'만'} }, y: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
+    }
+  });
+}
+
+function createBrandDoughnut(t) {
+  const ctx = document.getElementById('brandDoughnut').getContext('2d');
+  chartInstances.brand = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['키크론 51.1%','지티기어 29.9%','캐논 17.9%','MOZA 4.4%','파나텍 2.3%','에이퍼 1.2%','기타 1.5%'],
+      datasets: [{ data: [6.21,3.63,2.18,0.53,0.28,0.14,0.18], backgroundColor: [t['--chart-1'],t['--chart-2'],t['--chart-3'],t['--chart-4'],t['--chart-6'],t['--chart-7'],t['--chart-5']], borderWidth: 0 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins: { legend: { position:'bottom', labels: { font:{size:10}, padding:10, boxWidth:10, color: t['--sf-text-secondary'] } } }
+    }
+  });
+}
+
+function createGapChart(t) {
+  const ctx = document.getElementById('gapChart').getContext('2d');
+  chartInstances.gap = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['키크론','지티기어','캐논','MOZA','에이퍼','파나텍'],
+      datasets: [
+        { label: '수량 비중(%)', data: [57.9,21.3,12.6,0.8,4.4,0.3], backgroundColor: hexToRgba(t['--chart-1'],0.5), borderRadius: 3 },
+        { label: '매출 비중(%)', data: [51.1,29.9,17.9,4.4,1.2,2.3], backgroundColor: hexToRgba(t['--chart-2'],0.5), borderRadius: 3 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'top', labels: { font:{size:11}, boxWidth:12, padding:12, color: t['--sf-text-secondary'] } } },
+      scales: { y: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:10}, color:t['--sf-text-secondary'], callback:v=>v+'%'} }, x: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
+    }
+  });
+}
+
+function createModelTopChart(t) {
+  const ctx = document.getElementById('modelTopChart').getContext('2d');
+  chartInstances.model = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['10월','11월','12월','1월','2월'],
+      datasets: [
+        { label: 'K MAX', data: [0.82,0.95,1.08,1.26,1.42], borderColor: t['--chart-1'], backgroundColor: t['--chart-1'], pointRadius:3, tension:0.3, borderWidth:2 },
+        { label: 'K PRO SE', data: [1.31,1.28,1.22,1.29,1.18], borderColor: t['--chart-2'], backgroundColor: t['--chart-2'], pointRadius:3, tension:0.3, borderWidth:2 },
+        { label: 'K HE', data: [0.41,0.52,0.68,0.79,0.97], borderColor: t['--chart-3'], backgroundColor: t['--chart-3'], pointRadius:3, tension:0.3, borderWidth:2 },
+        { label: 'K PRO', data: [1.12,1.08,1.01,0.96,0.82], borderColor: t['--chart-4'], backgroundColor: t['--chart-4'], pointRadius:3, tension:0.3, borderWidth:2, borderDash:[4,2] },
+        { label: 'K SE', data: [0.68,0.72,0.74,0.75,0.71], borderColor: t['--chart-5'], backgroundColor: t['--chart-5'], pointRadius:3, tension:0.3, borderWidth:2 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend: { position:'top', labels: { font:{size:10}, boxWidth:12, padding:8, color: t['--sf-text-secondary'] } } },
+      scales: { y: { beginAtZero:true, grid:{color:t['--chart-grid']}, ticks:{font:{size:10}, color:t['--sf-text-secondary'], callback:v=>v+'억'} }, x: { grid:{display:false}, ticks:{font:{size:10}, color:t['--sf-text-secondary']} } }
+    }
+  });
+}
+
+function createAccessoryDoughnut(t) {
+  const ctx = document.getElementById('accessoryDoughnut').getContext('2d');
+  chartInstances.accessory = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: ['마우스','실리콘팜레스트','키캡','더스트커버','스위치','기타'],
+      datasets: [{ data: [32,22,18,12,9,7], backgroundColor: [t['--chart-1'],t['--chart-2'],t['--chart-3'],t['--chart-6'],t['--chart-7'],t['--chart-5']], borderWidth: 0 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'55%',
+      plugins: { legend: { position:'right', labels: { font:{size:10}, padding:8, boxWidth:10, color: t['--sf-text-secondary'] } } }
+    }
+  });
+}
+
+function buildAllCharts(t) {
+  createDailyTrendChart(t); createMonthlyTrendChart(t); createYearlyTrendChart(t);
+  createChannelDoughnut(t); createAovChart(t); createBrandDoughnut(t);
+  createGapChart(t); createModelTopChart(t); createAccessoryDoughnut(t);
+}
+
+// ===== Theme Switching =====
+function applyTheme(name) {
+  const t = THEMES[name];
+  if (!t) return;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  document.querySelectorAll('.theme-swatch').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === name);
+  });
+  Chart.defaults.color = t['--sf-text-secondary'];
+  destroyAllCharts();
+  buildAllCharts(t);
+  localStorage.setItem('tobe-admin-theme', name);
+}
+
+// ===== Init =====
+(function init() {
+  const saved = localStorage.getItem('tobe-admin-theme') || 'salesforce';
+  applyTheme(saved);
+  document.querySelectorAll('.theme-swatch').forEach(btn => {
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+  });
+})();
+
 </script>
 </body>
 </html>
