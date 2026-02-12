@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판매 분석 - ToBe Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        'sf-nav': '#032D60',
+        'sf-blue': '#0176D3',
+        'sf-blue-light': '#EBF5FE',
+        'sf-border': '#C9C9C9',
+        'sf-border-light': '#E5E5E5',
+        'sf-bg': '#F3F3F3',
+        'sf-card': '#FFFFFF',
+        'sf-text': '#181818',
+        'sf-text-secondary': '#706E6B',
+        'sf-text-tertiary': '#939393',
+        'sf-error': '#BA0517',
+        'sf-warning': '#FE9339',
+        'sf-success': '#2E844A',
+        'sf-info': '#0176D3',
+        'sf-error-bg': '#FEF1EE',
+        'sf-warning-bg': '#FFF8E6',
+        'sf-success-bg': '#EBF7E6',
+      },
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans KR', 'sans-serif'],
+      },
+      fontSize: {
+        '2xs': '0.75rem',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background: #F3F3F3; -webkit-font-smoothing: antialiased; font-size: 14px; }
+  .sf-card { background: #fff; border: 1px solid #E5E5E5; border-radius: 4px; }
+  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid #E5E5E5; }
+  .sf-card-body { padding: 18px; }
+  .sf-tab { padding: 12px 18px; font-size: 14px; color: #706E6B; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .sf-tab:hover { color: #181818; }
+  .sf-tab.active { color: #0176D3; border-bottom-color: #0176D3; font-weight: 600; }
+  .sf-tab-content { display: none; }
+  .sf-tab-content.active { display: block; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .sf-table th { font-size: 12px; font-weight: 600; color: #706E6B; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: #FAFAFB; border-bottom: 1px solid #E5E5E5; }
+  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid #F0F0F0; color: #181818; }
+  .sf-table tr:hover td { background: #F3F3F3; }
+  .sf-badge { font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 500; display: inline-block; }
+  .vel-cell { border: 1px solid #E5E5E5; border-radius: 4px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.15s; }
+  .vel-cell:hover { background: #F3F3F3; }
+  .priority-bar { width: 3px; border-radius: 2px; position: absolute; left: 0; top: 0; bottom: 0; }
+  .period-btn { padding: 4px 14px; font-size: 12px; border-radius: 4px; color: #706E6B; cursor: pointer; border: 1px solid #E5E5E5; background: #fff; }
+  .period-btn:hover { background: #F3F3F3; }
+  .period-btn.active { background: #0176D3; color: white; font-weight: 600; border-color: #0176D3; }
+
+  @media (max-width: 768px) {
+    main { padding: 10px 8px; gap: 10px; }
+    .sf-card-header { padding: 12px 14px; }
+    .sf-card-body { padding: 12px; }
+    nav .ml-auto { display: none; }
+    .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mobile-table-wrap .sf-table { min-width: 700px; }
+    .vel-matrix-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .vel-matrix-wrap table { min-width: 520px; }
+    .chart-container { height: 220px !important; }
+    .tab-bar-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .action-bar { flex-wrap: wrap; gap: 8px; }
+    .settings-grid { grid-template-columns: 1fr !important; }
+    .doughnut-container { height: 200px !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen text-sf-text">
+
+<!-- Navigation Bar -->
+<nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
+  <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
+  <span class="text-white/60 text-xs">판매 분석</span>
+  <div class="ml-auto text-xs text-white/50">2026. 2. 12. | Keychron | 1,758 SKU</div>
+</nav>
+
+<!-- Filter Bar -->
+<div class="bg-white border-b border-sf-border-light px-4 py-2.5">
+  <div class="max-w-[1440px] mx-auto flex flex-wrap gap-2 items-center">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>전체 카테고리</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>Keychron</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>상품</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>옵션</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>판매중</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>전체 용도</option></select>
+    <div class="flex items-center gap-1 ml-2">
+      <span class="text-2xs text-sf-text-secondary mr-1">기간:</span>
+      <button class="period-btn" data-period="1w">1주</button>
+      <button class="period-btn active" data-period="1m">1달</button>
+      <button class="period-btn" data-period="3m">3달</button>
+      <button class="period-btn" data-period="6m">6달</button>
+      <button class="period-btn" data-period="1y">1년</button>
+    </div>
+    <div class="flex items-center gap-1 ml-2">
+      <span class="text-2xs text-sf-text-secondary mr-1">비교:</span>
+      <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>전기간 대비</option><option>전년동기(YoY)</option><option>없음</option></select>
+    </div>
+    <input type="date" value="2026-02-12" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <button class="text-xs bg-sf-blue text-white px-4 py-1.5 rounded hover:bg-blue-700 font-medium">분석</button>
+  </div>
+</div>
+
+<main class="max-w-[1440px] mx-auto px-4 py-4 space-y-4">
+
+<!-- ===== S1: Sales Anomaly Alert Center ===== -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  <!-- Card A: 판매 급감 -->
+  <div class="sf-card relative overflow-hidden">
+    <div class="priority-bar bg-sf-error"></div>
+    <div class="sf-card-header ml-2">
+      <h3 class="text-sm font-semibold text-sf-text">판매 급감 감지</h3>
+      <p class="text-2xs text-sf-text-tertiary">전주 대비 50% 이상 하락</p>
+    </div>
+    <div class="sf-card-body ml-2">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">7건</span>
+        <span class="text-2xs text-sf-text-tertiary">주간 매출 영향 ~2,340만원</span>
+      </div>
+      <div class="space-y-1.5 mt-3">
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">K10 MAX 파스텔 RGB</div>
+            <div class="text-2xs text-sf-text-tertiary">주 152개 → 49개</div>
+          </div>
+          <span class="text-xs font-semibold text-sf-error">-68%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">C2 Pro 8K 저소음적축</div>
+            <div class="text-2xs text-sf-text-tertiary">주 56개 → 25개</div>
+          </div>
+          <span class="text-xs font-semibold text-sf-error">-55%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">M6 Black All Silent</div>
+            <div class="text-2xs text-sf-text-tertiary">주 59개 → 28개</div>
+          </div>
+          <span class="text-xs font-semibold text-sf-error">-52%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5">
+          <div>
+            <div class="text-xs font-medium text-sf-text">B Space Gray Frame</div>
+            <div class="text-2xs text-sf-text-tertiary">주 66개 → 32개</div>
+          </div>
+          <span class="text-xs font-semibold text-sf-error">-51%</span>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">전체 7건 보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card B: 판매 급증 -->
+  <div class="sf-card relative overflow-hidden">
+    <div class="priority-bar" style="background:#FE9339"></div>
+    <div class="sf-card-header ml-2">
+      <h3 class="text-sm font-semibold text-sf-text">판매 급증 감지</h3>
+      <p class="text-2xs text-sf-text-tertiary">전주 대비 200% 이상 증가</p>
+    </div>
+    <div class="sf-card-body ml-2">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">4건</span>
+        <span class="text-2xs text-sf-text-tertiary">재고 소진 가속 주의</span>
+      </div>
+      <div class="space-y-1.5 mt-3">
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">B1 Pro Retro Red Frame</div>
+            <div class="text-2xs text-sf-text-tertiary">주 48개 → 202개 · 소진 1.5주</div>
+          </div>
+          <span class="text-xs font-semibold" style="color:#B95D08">+320%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">팜레스트 파스텔 K10P</div>
+            <div class="text-2xs text-sf-text-tertiary">주 48개 → 167개 · 소진 3.2주</div>
+          </div>
+          <span class="text-xs font-semibold" style="color:#B95D08">+248%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">K10 Pro SE ZMK 핫스왑</div>
+            <div class="text-2xs text-sf-text-tertiary">주 10개 → 28개 · 소진 4.1주</div>
+          </div>
+          <span class="text-xs font-semibold" style="color:#B95D08">+180%</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5">
+          <div>
+            <div class="text-xs font-medium text-sf-text">M6 White Silent Micro</div>
+            <div class="text-2xs text-sf-text-tertiary">주 32개 → 80개 · 소진 0.5주</div>
+          </div>
+          <span class="text-xs font-semibold" style="color:#B95D08">+150%</span>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">전체 4건 보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card C: 슬로우 세일즈 -->
+  <div class="sf-card relative overflow-hidden">
+    <div class="priority-bar bg-sf-border"></div>
+    <div class="sf-card-header ml-2">
+      <h3 class="text-sm font-semibold text-sf-text">슬로우 세일즈 감지</h3>
+      <p class="text-2xs text-sf-text-tertiary">30일간 판매 0건 (재고 보유)</p>
+    </div>
+    <div class="sf-card-body ml-2">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">102건</span>
+        <span class="text-2xs text-sf-text-tertiary">묶인 재고 금액 3.2억</span>
+      </div>
+      <div class="space-y-1.5 mt-3">
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">EX75 HE 블랙 8K</div>
+            <div class="text-2xs text-sf-text-tertiary">792개 재고 · 39,871,300원</div>
+          </div>
+          <span class="text-2xs text-sf-text-tertiary">89일 전</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">키스킨 B1 (KSB1)</div>
+            <div class="text-2xs text-sf-text-tertiary">1,798개 재고 · 2,124,516원</div>
+          </div>
+          <span class="text-2xs text-sf-text-tertiary">113일 전</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">더스트커버 Q Pro 100%</div>
+            <div class="text-2xs text-sf-text-tertiary">445개 재고 · 8,921,000원</div>
+          </div>
+          <span class="text-2xs text-sf-text-tertiary">71일 전</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5">
+          <div>
+            <div class="text-xs font-medium text-sf-text">K10 Pro SE 2.4G (구)</div>
+            <div class="text-2xs text-sf-text-tertiary">408개 재고 · 26,348,886원</div>
+          </div>
+          <span class="text-2xs text-sf-text-tertiary">45일 전</span>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">전체 102건 보기</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S2: Sales KPI Dashboard ===== -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">주간 매출</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">4.2억</span>
+      <span class="text-xs font-medium text-sf-success">▲ +8.2%</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">639 SKU 판매 · 전주 3.9억</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">월간 매출</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">16.8억</span>
+      <span class="text-xs font-medium text-sf-success">▲ +12.5%</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">전월 14.9억 대비</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">3달 누적 매출</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">48.2억</span>
+      <span class="text-xs font-medium text-sf-error">▼ -3.1%</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">전년 동기 49.7억 대비</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">판매 활성 SKU</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">639</span>
+      <span class="text-xs font-medium text-sf-success">▲ +15</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">전체 1,758 중 36.3%</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">평균 주문 단가</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">87,200</span>
+      <span class="text-xs font-medium text-sf-error">▼ -2.3%</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">원/건 · 전주 89,200원</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide mb-1">신규 판매 SKU</div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-2xl font-bold text-sf-text">12</span>
+      <span class="text-xs font-medium text-sf-info">이번 주 3건</span>
+    </div>
+    <div class="text-2xs text-sf-text-tertiary mt-1">최근 30일 내 첫 판매</div>
+  </div>
+</div>
+
+<!-- ===== S3: Sales Trend Charts ===== -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">주간 매출 추이</h3>
+      <p class="text-2xs text-sf-text-tertiary">최근 12주 · 올해 vs 전년 동기 vs 이동평균</p>
+    </div>
+    <div class="sf-card-body chart-container" style="height:280px">
+      <canvas id="weeklyTrendChart"></canvas>
+    </div>
+  </div>
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">카테고리별 매출 비중</h3>
+      <p class="text-2xs text-sf-text-tertiary">최근 8주 · 키보드 / 마우스 / 액세서리</p>
+    </div>
+    <div class="sf-card-body chart-container" style="height:280px">
+      <canvas id="categoryMixChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S4: ABC Analysis & Revenue Ranking ===== -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <!-- ABC Chart -->
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">ABC 분석</h3>
+      <p class="text-2xs text-sf-text-tertiary">3달 매출 기준 · 파레토 법칙 자동 분류</p>
+    </div>
+    <div class="sf-card-body">
+      <div style="height:120px">
+        <canvas id="abcChart"></canvas>
+      </div>
+      <div class="mt-4 space-y-2">
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <div class="flex items-center gap-2">
+            <span class="sf-badge bg-sf-error-bg text-sf-error">A등급</span>
+            <span class="text-xs text-sf-text-secondary">매출 상위 80%</span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-semibold text-sf-text">42 SKU</span>
+            <span class="text-2xs text-sf-text-tertiary ml-2">38.6억 (80%)</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <div class="flex items-center gap-2">
+            <span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">B등급</span>
+            <span class="text-xs text-sf-text-secondary">매출 80~95%</span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-semibold text-sf-text">87 SKU</span>
+            <span class="text-2xs text-sf-text-tertiary ml-2">7.2억 (15%)</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-2">
+            <span class="sf-badge" style="background:#EEE;color:#706E6B">C등급</span>
+            <span class="text-xs text-sf-text-secondary">매출 하위 5%</span>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-semibold text-sf-text">510 SKU</span>
+            <span class="text-2xs text-sf-text-tertiary ml-2">2.4억 (5%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 10 Revenue Table -->
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">매출 Top 10</h3>
+      <p class="text-2xs text-sf-text-tertiary">3달 매출 기준 순위</p>
+    </div>
+    <div class="sf-card-body p-0">
+      <div class="mobile-table-wrap">
+      <table class="sf-table w-full">
+        <thead>
+          <tr><th class="text-center w-10">#</th><th class="text-left">상품 / 옵션</th><th class="text-right">3달 매출</th><th class="text-right">비중</th><th class="text-center">추세</th><th class="text-center">ABC</th><th class="text-center">상태</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="text-center font-semibold">1</td><td><span class="font-medium">K10 MAX 파스텔 RGB</span><br><span class="text-2xs text-sf-text-tertiary">기계식 핫스왑 저소음바나나축</span></td><td class="text-right font-medium">94,362,681</td><td class="text-right text-2xs">19.6%</td><td class="text-center text-xs text-sf-error">▼-68%</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span></td></tr>
+          <tr><td class="text-center font-semibold">2</td><td><span class="font-medium">K10 Pro SE ZMK 핫스왑</span><br><span class="text-2xs text-sf-text-tertiary">저소음바나나축</span></td><td class="text-right font-medium">24,994,560</td><td class="text-right text-2xs">5.2%</td><td class="text-center text-xs text-sf-success">▲+180%</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-success mr-1"></span></td></tr>
+          <tr><td class="text-center font-semibold">3</td><td><span class="font-medium">B1 Pro Retro Red Frame</span></td><td class="text-right font-medium">22,825,152</td><td class="text-right text-2xs">4.7%</td><td class="text-center text-xs text-sf-success">▲+320%</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span></td></tr>
+          <tr><td class="text-center font-semibold">4</td><td><span class="font-medium">C2 Pro 8K 레트로 유선</span><br><span class="text-2xs text-sf-text-tertiary">RGB 기계식 핫스왑</span></td><td class="text-right font-medium">21,940,792</td><td class="text-right text-2xs">4.5%</td><td class="text-center text-xs text-sf-text-secondary">→0%</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-success mr-1"></span></td></tr>
+          <tr><td class="text-center font-semibold">5</td><td><span class="font-medium">B1 Pro Space Gray Frame</span></td><td class="text-right font-medium">18,580,248</td><td class="text-right text-2xs">3.9%</td><td class="text-center text-xs text-sf-success">▲+12%</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-error mr-1"></span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S5: Sales-Inventory Matrix ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="text-sm font-semibold text-sf-text">판매-재고 매트릭스</h2>
+    <p class="text-2xs text-sf-text-tertiary mt-0.5">판매 속도 x 재고 커버리지 — 셀 클릭 시 상세 목록</p>
+  </div>
+  <div class="sf-card-body vel-matrix-wrap">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr>
+          <th class="p-2 text-2xs text-sf-text-tertiary text-left w-24"></th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">≤1주</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">1-4주</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">1-3개월</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">3-12개월</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">>12개월</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">매출 상위 20%</td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">8</div><div class="text-2xs text-sf-error">긴급발주</div><div class="text-2xs text-sf-text-tertiary">2.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-warning bg-sf-warning-bg"><div class="text-base font-bold text-sf-text">23</div><div class="text-2xs" style="color:#B95D08">발주필요</div><div class="text-2xs text-sf-text-tertiary">3.8억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">45</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">5.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">12</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.9억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">3</div><div class="text-2xs text-sf-text-secondary">과잉</div><div class="text-2xs text-sf-text-tertiary">0.8억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">매출 중위 60%</td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">5</div><div class="text-2xs text-sf-error">긴급발주</div><div class="text-2xs text-sf-text-tertiary">0.7억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">18</div><div class="text-2xs text-sf-text-secondary">발주검토</div><div class="text-2xs text-sf-text-tertiary">1.4억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">89</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">4.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">67</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">2.8억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">28</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">매출 하위 20%</td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">3</div><div class="text-2xs text-sf-text-secondary">확인필요</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">11</div><div class="text-2xs text-sf-text-secondary">적정</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">24</div><div class="text-2xs text-sf-text-secondary">적정</div><div class="text-2xs text-sf-text-tertiary">0.9억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">42</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.7억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">58</div><div class="text-2xs text-sf-error">과잉처분</div><div class="text-2xs text-sf-text-tertiary">3.1억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">무판매<br><span class="text-sf-text-tertiary font-normal">90일 0건</span></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">2</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">7</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">15</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">33</div><div class="text-2xs text-sf-text-tertiary">처분검토</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">105</div><div class="text-2xs text-sf-error">처분필요</div><div class="text-2xs text-sf-text-tertiary">4.8억</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Demand Forecast Banner -->
+  <div class="border-t border-sf-border-light px-4 py-3 bg-sf-blue-light">
+    <div class="flex flex-wrap items-center gap-4">
+      <span class="text-sm font-semibold text-sf-blue">수요 예측 기반 발주 제안</span>
+      <span class="text-2xs text-sf-text-secondary">최근 4주 판매 추세 + 계절 가중치 적용</span>
+      <div class="flex gap-6 text-xs ml-auto">
+        <span>즉시 발주 권장: <strong class="text-sf-error">13 SKU</strong></span>
+        <span>2주 내 발주: <strong class="font-semibold" style="color:#B95D08">34 SKU</strong></span>
+        <span>재고 충분: <strong class="text-sf-success">592 SKU</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S6: Channel/Usage Analysis ===== -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">채널별 매출 분포</h3>
+      <p class="text-2xs text-sf-text-tertiary">주간 매출 기준</p>
+    </div>
+    <div class="sf-card-body">
+      <div class="doughnut-container" style="height:240px">
+        <canvas id="channelDoughnut"></canvas>
+      </div>
+      <div class="space-y-1.5 mt-4">
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2"><span class="status-dot" style="background:#0176D3"></span><span class="text-xs">자사몰</span></div>
+          <div class="text-xs"><span class="font-medium">1.47억 (35%)</span> <span class="text-sf-success ml-1">▲+12%</span></div>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2"><span class="status-dot" style="background:#FE9339"></span><span class="text-xs">마켓플레이스</span></div>
+          <div class="text-xs"><span class="font-medium">1.18억 (28%)</span> <span class="text-sf-error ml-1">▼-3%</span></div>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2"><span class="status-dot" style="background:#2E844A"></span><span class="text-xs">B2B 도매</span></div>
+          <div class="text-xs"><span class="font-medium">0.92억 (22%)</span> <span class="text-sf-text-secondary ml-1">→+1%</span></div>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2"><span class="status-dot" style="background:#032D60"></span><span class="text-xs">소매</span></div>
+          <div class="text-xs"><span class="font-medium">0.42억 (10%)</span> <span class="text-sf-success ml-1">▲+5%</span></div>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2"><span class="status-dot" style="background:#C9C9C9"></span><span class="text-xs">기타</span></div>
+          <div class="text-xs"><span class="font-medium">0.21억 (5%)</span> <span class="text-sf-error ml-1">▼-8%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">채널 집중도 리스크</h3>
+      <p class="text-2xs text-sf-text-tertiary">HHI 지수 기반 분석</p>
+    </div>
+    <div class="sf-card-body">
+      <div class="flex items-baseline gap-3 mb-4">
+        <span class="text-2xl font-bold text-sf-text">2,458</span>
+        <span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">보통 집중</span>
+      </div>
+      <div class="text-2xs text-sf-text-tertiary mb-4">HHI 2,500 이상 = 고집중 리스크 · 1,500 미만 = 분산</div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <span class="text-xs text-sf-text-secondary">상위 1개 채널 비중</span>
+          <span class="text-sm font-semibold text-sf-text">35% <span class="text-2xs font-normal text-sf-text-tertiary">(자사몰)</span></span>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <span class="text-xs text-sf-text-secondary">상위 2개 채널 비중</span>
+          <span class="text-sm font-semibold text-sf-text">63% <span class="text-2xs font-normal text-sf-text-tertiary">(자사몰 + 마켓)</span></span>
+        </div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-sf-border-light">
+        <div class="text-xs font-medium text-sf-text mb-2">위험 신호</div>
+        <div class="space-y-1.5">
+          <div class="flex items-start gap-2">
+            <span class="status-dot bg-sf-warning mt-1"></span>
+            <span class="text-2xs text-sf-text-secondary">마켓플레이스 의존도 3주 연속 하락 (-3%p)</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="status-dot bg-sf-warning mt-1"></span>
+            <span class="text-2xs text-sf-text-secondary">B2B 도매 신규 거래처 0건 (최근 30일)</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="status-dot bg-sf-success mt-1"></span>
+            <span class="text-2xs text-sf-text-secondary">자사몰 매출 4주 연속 성장 (+12%p)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S7: Detail Tabs ===== -->
+<div class="sf-card" id="detail-tabs">
+  <div class="border-b border-sf-border-light flex overflow-x-auto tab-bar-scroll">
+    <button class="sf-tab active" data-tab="top-anomaly">매출 상위 & 이상감지</button>
+    <button class="sf-tab" data-tab="decline">판매 급감 <span class="text-2xs ml-1 text-sf-error">7</span></button>
+    <button class="sf-tab" data-tab="spike">판매 급증 <span class="text-2xs ml-1" style="color:#B95D08">4</span></button>
+    <button class="sf-tab" data-tab="slow">슬로우 세일즈 <span class="text-2xs ml-1 text-sf-text-tertiary">102</span></button>
+    <button class="sf-tab" data-tab="newproduct">신제품 성과 <span class="text-2xs ml-1 text-sf-text-tertiary">12</span></button>
+    <button class="sf-tab" data-tab="all-sku">전체 SKU <span class="text-2xs ml-1 text-sf-text-tertiary">1,758</span></button>
+  </div>
+
+  <!-- Tab 1: Top Revenue & Anomaly -->
+  <div class="sf-tab-content active" id="tab-top-anomaly">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">매출순 정렬 · 이상 감지 포함</div>
+      <div class="flex gap-2">
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">EXCEL</button>
+      </div>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead>
+        <tr>
+          <th class="text-center w-10">#</th><th class="text-left">상품코드</th><th class="text-left">상품 / 옵션</th><th class="text-right">1주 판매</th><th class="text-right">1달 판매</th><th class="text-right">1주 매출</th><th class="text-right">3달 매출</th><th class="text-center">주간 추세</th><th class="text-center">ABC</th><th class="text-center">재고</th><th class="text-center">이상감지</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">1</td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0396-0001</td>
+          <td><span class="font-medium">B1 Pro Space Gray Frame</span></td>
+          <td class="text-right">211</td><td class="text-right">611</td>
+          <td class="text-right font-medium">4,424,904</td><td class="text-right">18,580,248</td>
+          <td class="text-center text-xs text-sf-success">▲+12%</td>
+          <td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td>
+          <td class="text-center"><span class="status-dot bg-sf-error"></span></td>
+          <td class="text-center text-sf-text-tertiary">—</td>
+        </tr>
+        <tr>
+          <td class="text-center">2</td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0396-0006</td>
+          <td><span class="font-medium">B1 Pro Retro Red Frame</span></td>
+          <td class="text-right">202</td><td class="text-right">584</td>
+          <td class="text-right font-medium">4,366,656</td><td class="text-right">22,825,152</td>
+          <td class="text-center text-xs text-sf-success">▲+320%</td>
+          <td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td>
+          <td class="text-center"><span class="status-dot bg-sf-warning"></span></td>
+          <td class="text-center"><span class="text-xs font-semibold" style="color:#B95D08">▲급증</span></td>
+        </tr>
+        <tr>
+          <td class="text-center">3</td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0108-0067</td>
+          <td><span class="font-medium">팜레스트 실리콘 레트로 파스텔</span></td>
+          <td class="text-right">167</td><td class="text-right">603</td>
+          <td class="text-right font-medium">1,226,740</td><td class="text-right">6,680,560</td>
+          <td class="text-center text-xs text-sf-success">▲+248%</td>
+          <td class="text-center"><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">B</span></td>
+          <td class="text-center"><span class="status-dot bg-sf-warning"></span></td>
+          <td class="text-center"><span class="text-xs font-semibold" style="color:#B95D08">▲급증</span></td>
+        </tr>
+        <tr>
+          <td class="text-center">4</td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0108-0031</td>
+          <td><span class="font-medium">팜레스트 실리콘 K10P</span></td>
+          <td class="text-right">141</td><td class="text-right">660</td>
+          <td class="text-right font-medium">892,131</td><td class="text-right">10,455,798</td>
+          <td class="text-center text-xs text-sf-text-secondary">→0%</td>
+          <td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td>
+          <td class="text-center"><span class="status-dot bg-sf-success"></span></td>
+          <td class="text-center text-sf-text-tertiary">—</td>
+        </tr>
+        <tr>
+          <td class="text-center">5</td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0084-0052</td>
+          <td><span class="font-medium">M6 White Silent Micro</span></td>
+          <td class="text-right">80</td><td class="text-right">255</td>
+          <td class="text-right font-medium">3,175,200</td><td class="text-right">11,391,030</td>
+          <td class="text-center text-xs text-sf-success">▲+150%</td>
+          <td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td>
+          <td class="text-center"><span class="status-dot bg-sf-warning"></span></td>
+          <td class="text-center"><span class="text-xs font-semibold" style="color:#B95D08">▲급증</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tab 2: 판매 급감 -->
+  <div class="sf-tab-content" id="tab-decline">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">전주 대비 50% 이상 하락 · 매출 영향도 순</div>
+      <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left">상품 / 옵션</th><th class="text-right">전주 판매</th><th class="text-right">이번주 판매</th><th class="text-right">하락률</th><th class="text-right">1주 매출 감소</th><th class="text-left">예상 원인</th></tr></thead>
+      <tbody>
+        <tr><td><span class="font-medium">K10 MAX 파스텔 RGB</span></td><td class="text-right">152</td><td class="text-right text-sf-error font-semibold">49</td><td class="text-right text-sf-error font-semibold">-68%</td><td class="text-right">-8,624,000</td><td class="text-2xs text-sf-text-secondary">프로모션 종료 영향 추정</td></tr>
+        <tr><td><span class="font-medium">C2 Pro 8K 저소음적축</span></td><td class="text-right">56</td><td class="text-right text-sf-error font-semibold">25</td><td class="text-right text-sf-error font-semibold">-55%</td><td class="text-right">-2,418,000</td><td class="text-2xs text-sf-text-secondary">경쟁사 신제품 출시</td></tr>
+        <tr><td><span class="font-medium">M6 Black All Silent</span></td><td class="text-right">59</td><td class="text-right text-sf-error font-semibold">28</td><td class="text-right text-sf-error font-semibold">-52%</td><td class="text-right">-5,712,000</td><td class="text-2xs text-sf-text-secondary">계절성 영향 가능</td></tr>
+        <tr><td><span class="font-medium">B Space Gray Frame</span></td><td class="text-right">66</td><td class="text-right text-sf-error font-semibold">32</td><td class="text-right text-sf-error font-semibold">-51%</td><td class="text-right">-8,086,000</td><td class="text-2xs text-sf-text-secondary">B1 Pro로 수요 이동 추정</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tab 3: 판매 급증 -->
+  <div class="sf-tab-content" id="tab-spike">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">전주 대비 200% 이상 증가 · 재고 소진 우선</div>
+      <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left">상품 / 옵션</th><th class="text-right">전주 판매</th><th class="text-right">이번주 판매</th><th class="text-right">증가율</th><th class="text-right">현재 재고</th><th class="text-right">소진 예상</th><th class="text-center">발주 상태</th></tr></thead>
+      <tbody>
+        <tr><td><span class="font-medium">B1 Pro Retro Red Frame</span></td><td class="text-right">48</td><td class="text-right font-semibold" style="color:#B95D08">202</td><td class="text-right font-semibold" style="color:#B95D08">+320%</td><td class="text-right">45</td><td class="text-right text-sf-error font-semibold">1.5주</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">미발주</span></td></tr>
+        <tr><td><span class="font-medium">팜레스트 파스텔 K10P</span></td><td class="text-right">48</td><td class="text-right font-semibold" style="color:#B95D08">167</td><td class="text-right font-semibold" style="color:#B95D08">+248%</td><td class="text-right">76</td><td class="text-right" style="color:#B95D08">3.2주</td><td class="text-center"><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">검토중</span></td></tr>
+        <tr><td><span class="font-medium">K10 Pro SE ZMK 핫스왑</span></td><td class="text-right">10</td><td class="text-right font-semibold" style="color:#B95D08">28</td><td class="text-right font-semibold" style="color:#B95D08">+180%</td><td class="text-right">116</td><td class="text-right text-sf-text-secondary">4.1주</td><td class="text-center"><span class="sf-badge bg-sf-success-bg text-sf-success">발주완료</span></td></tr>
+        <tr><td><span class="font-medium">M6 White Silent Micro</span></td><td class="text-right">32</td><td class="text-right font-semibold" style="color:#B95D08">80</td><td class="text-right font-semibold" style="color:#B95D08">+150%</td><td class="text-right">6</td><td class="text-right text-sf-error font-semibold">0.5주</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">미발주</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tab 4: 슬로우 세일즈 -->
+  <div class="sf-tab-content" id="tab-slow">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">30일간 판매 0건 · 재고 금액 순</div>
+      <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left">상품 / 옵션</th><th class="text-right">재고 수량</th><th class="text-right">재고 금액</th><th class="text-right">최종 판매일</th><th class="text-right">경과일</th><th class="text-center">추천 조치</th></tr></thead>
+      <tbody>
+        <tr><td><span class="font-medium">EX75 HE 블랙 8K</span><br><span class="text-2xs text-sf-text-tertiary">마그네틱 핫스왑</span></td><td class="text-right">792</td><td class="text-right font-medium">39,871,300</td><td class="text-right text-sf-error">2025-11-15</td><td class="text-right text-sf-error font-semibold">89일</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td></tr>
+        <tr><td><span class="font-medium">키스킨 B1 (KSB1)</span></td><td class="text-right">1,798</td><td class="text-right font-medium">2,124,516</td><td class="text-right text-sf-error">2025-10-22</td><td class="text-right text-sf-error font-semibold">113일</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td></tr>
+        <tr><td><span class="font-medium">더스트커버 Q Pro 100%</span></td><td class="text-right">445</td><td class="text-right font-medium">8,921,000</td><td class="text-right text-sf-text-secondary">2025-12-03</td><td class="text-right" style="color:#B95D08">71일</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td></tr>
+        <tr><td><span class="font-medium">K10 Pro SE 2.4G (구)</span><br><span class="text-2xs text-sf-text-tertiary">핫스왑 바나나축</span></td><td class="text-right">408</td><td class="text-right font-medium">26,348,886</td><td class="text-right text-sf-text-secondary">2025-12-29</td><td class="text-right" style="color:#B95D08">45일</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tab 5: 신제품 성과 -->
+  <div class="sf-tab-content" id="tab-newproduct">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">최근 30일 내 첫 판매 기록 · 성과등급 순</div>
+      <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left">상품 / 옵션</th><th class="text-right">첫 판매일</th><th class="text-right">누적 판매</th><th class="text-right">주간 평균</th><th class="text-center">주간 추세</th><th class="text-right">재고</th><th class="text-center">성과 등급</th></tr></thead>
+      <tbody>
+        <tr><td><span class="font-medium">K8 Pro QMK/VIA 적축</span></td><td class="text-right">2026-01-20</td><td class="text-right font-semibold">186</td><td class="text-right">58</td><td class="text-center text-xs text-sf-success">▲+25%</td><td class="text-right">542</td><td class="text-center"><span class="sf-badge bg-sf-success-bg text-sf-success">상</span></td></tr>
+        <tr><td><span class="font-medium">Q65 Max 청축 신형</span></td><td class="text-right">2026-01-28</td><td class="text-right font-semibold">89</td><td class="text-right">42</td><td class="text-center text-xs text-sf-success">▲+15%</td><td class="text-right">320</td><td class="text-center"><span class="sf-badge bg-sf-success-bg text-sf-success">상</span></td></tr>
+        <tr><td><span class="font-medium">M3 Mini 무선 마우스</span></td><td class="text-right">2026-02-03</td><td class="text-right">28</td><td class="text-right">18</td><td class="text-center text-xs text-sf-text-secondary">→0%</td><td class="text-right">200</td><td class="text-center"><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">중</span></td></tr>
+        <tr><td><span class="font-medium">V1 Max SE 저소음적축</span></td><td class="text-right">2026-02-08</td><td class="text-right">5</td><td class="text-right">5</td><td class="text-center text-xs text-sf-text-tertiary">신규</td><td class="text-right">150</td><td class="text-center"><span class="sf-badge" style="background:#EEE;color:#706E6B">관찰</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Tab 6: 전체 SKU -->
+  <div class="sf-tab-content" id="tab-all-sku">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+      <div class="text-xs text-sf-text-secondary">전체 SKU · 속도 분류 + 상태 + ABC + 이상감지</div>
+      <div class="flex gap-2">
+        <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 속도</option><option>빠른</option><option>보통</option><option>느린</option><option>무판매</option></select>
+        <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 상태</option></select>
+        <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 ABC</option><option>A</option><option>B</option><option>C</option></select>
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded">EXCEL</button>
+      </div>
+    </div>
+    <div class="mobile-table-wrap">
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left w-12">속도</th><th class="text-left">상품코드</th><th class="text-left">상품 / 옵션</th><th class="text-right">재고</th><th class="text-right">1주 판매</th><th class="text-right">1주 매출</th><th class="text-right">3달 매출</th><th class="text-center">추세</th><th class="text-center">ABC</th><th class="text-center">상태</th></tr></thead>
+      <tbody>
+        <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0396-0001</td><td><span class="font-medium">B1 Pro Space Gray Frame</span></td><td class="text-right font-semibold text-sf-error">0</td><td class="text-right">211</td><td class="text-right">4,424,904</td><td class="text-right">18,580,248</td><td class="text-center text-xs text-sf-success">▲</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-error mr-1"></span><span class="text-2xs text-sf-error">품절</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0108-0031</td><td><span class="font-medium">팜레스트 실리콘 K10P</span></td><td class="text-right">832</td><td class="text-right">141</td><td class="text-right">892,131</td><td class="text-right">10,455,798</td><td class="text-center text-xs text-sf-text-secondary">→</td><td class="text-center"><span class="sf-badge bg-sf-error-bg text-sf-error">A</span></td><td class="text-center"><span class="status-dot bg-sf-success mr-1"></span><span class="text-2xs text-sf-success">정상</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">보통</td><td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td><td><span class="font-medium">B Space Gray Frame</span></td><td class="text-right">267</td><td class="text-right">66</td><td class="text-right">1,259,582</td><td class="text-right">15,906,677</td><td class="text-center text-xs text-sf-error">▼</td><td class="text-center"><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">B</span></td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span><span class="text-2xs" style="color:#B95D08">주의</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">무판매</td><td class="text-2xs text-sf-text-tertiary">0029-0509-0001</td><td><span class="font-medium">EX75 HE 블랙 8K</span></td><td class="text-right text-sf-text-secondary">792</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-center text-xs text-sf-text-tertiary">—</td><td class="text-center"><span class="sf-badge" style="background:#EEE;color:#706E6B">C</span></td><td class="text-center"><span class="status-dot bg-sf-border mr-1"></span><span class="text-2xs text-sf-text-tertiary">사장</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="px-4 py-3 text-center text-2xs text-sf-text-tertiary border-t border-sf-border-light">1,758 SKU 중 4건 표시 (프로토타입)</div>
+  </div>
+</div>
+
+<!-- ===== S8: Alert & Automation Settings ===== -->
+<div class="sf-card">
+  <div class="sf-card-header flex items-center justify-between cursor-pointer" id="settings-toggle">
+    <div>
+      <h2 class="text-sm font-semibold text-sf-text">알림 & 자동 리포트 설정</h2>
+      <p class="text-2xs text-sf-text-tertiary">판매 이상 알림, 자동 리포트, 임계값 커스터마이징</p>
+    </div>
+    <span class="text-sf-text-secondary text-sm" id="settings-arrow">▼ 펼치기</span>
+  </div>
+  <div class="sf-card-body hidden" id="settings-panel">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 settings-grid">
+      <!-- Column 1: 판매 이상 알림 -->
+      <div>
+        <div class="text-xs font-semibold text-sf-text mb-3">판매 이상 알림</div>
+        <div class="space-y-3">
+          <label class="flex items-start gap-2">
+            <input type="checkbox" checked class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">판매 급감 감지</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">임계값: <input type="number" value="-50" class="text-2xs border border-sf-border rounded px-2 py-0.5 w-14 text-center">% 전주 대비</div>
+            </div>
+          </label>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" checked class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">판매 급증 감지</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">임계값: <input type="number" value="200" class="text-2xs border border-sf-border rounded px-2 py-0.5 w-14 text-center">% 전주 대비</div>
+            </div>
+          </label>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">슬로우 세일즈 감지</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">기간: <input type="number" value="30" class="text-2xs border border-sf-border rounded px-2 py-0.5 w-14 text-center">일 무판매</div>
+            </div>
+          </label>
+          <div class="text-2xs text-sf-text-tertiary mt-2">알림 채널: <select class="text-2xs border border-sf-border rounded px-2 py-0.5"><option>이메일</option><option>슬랙</option><option>카카오톡</option></select></div>
+        </div>
+      </div>
+
+      <!-- Column 2: 자동 리포트 -->
+      <div>
+        <div class="text-xs font-semibold text-sf-text mb-3">자동 리포트</div>
+        <div class="space-y-3">
+          <label class="flex items-start gap-2">
+            <input type="checkbox" checked class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">일간 요약 리포트</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">발송 시간: <input type="time" value="09:00" class="text-2xs border border-sf-border rounded px-2 py-0.5"></div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">수신: sales@tbnws.co.kr</div>
+            </div>
+          </label>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" checked class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">주간 분석 리포트</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">발송 요일: <select class="text-2xs border border-sf-border rounded px-2 py-0.5"><option>월요일</option><option>화요일</option></select></div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">수신: manager@tbnws.co.kr</div>
+            </div>
+          </label>
+          <label class="flex items-start gap-2">
+            <input type="checkbox" class="mt-0.5 w-3.5 h-3.5">
+            <div>
+              <div class="text-xs text-sf-text">월간 경영 리포트</div>
+              <div class="text-2xs text-sf-text-tertiary mt-0.5">발송일: 매월 <input type="number" value="1" class="text-2xs border border-sf-border rounded px-2 py-0.5 w-10 text-center">일</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Column 3: 임계값 설정 -->
+      <div>
+        <div class="text-xs font-semibold text-sf-text mb-3">임계값 커스터마이징</div>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">품절 경고</span>
+            <div class="text-2xs"><input type="number" value="2" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">주 이하</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">소진 임박</span>
+            <div class="text-2xs"><input type="number" value="1" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">주 이하</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">판매 급감 기준</span>
+            <div class="text-2xs">-<input type="number" value="50" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">%</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">판매 급증 기준</span>
+            <div class="text-2xs">+<input type="number" value="200" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">%</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">슬로우 세일즈</span>
+            <div class="text-2xs"><input type="number" value="30" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">일</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-2xs text-sf-text-secondary">과잉재고 기준</span>
+            <div class="text-2xs"><input type="number" value="12" class="border border-sf-border rounded px-2 py-0.5 w-12 text-center">개월+</div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button class="text-2xs text-sf-text-tertiary hover:text-sf-text">기본값 초기화</button>
+          <button class="text-2xs bg-sf-blue text-white px-4 py-1 rounded hover:bg-blue-700 font-medium ml-auto">설정 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// Tab switching
+document.querySelectorAll('.sf-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sf-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sf-tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Settings panel toggle
+document.getElementById('settings-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('settings-panel');
+  const arrow = document.getElementById('settings-arrow');
+  panel.classList.toggle('hidden');
+  arrow.textContent = panel.classList.contains('hidden') ? '▼ 펼치기' : '▲ 접기';
+});
+
+// Period selector
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Chart defaults
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#706E6B';
+
+// Chart 1: Weekly Sales Trend
+new Chart(document.getElementById('weeklyTrendChart'), {
+  type: 'line',
+  data: {
+    labels: ['11/18','11/25','12/2','12/9','12/16','12/23','12/30','1/6','1/13','1/20','1/27','2/3','2/10'],
+    datasets: [
+      { label: '올해 매출(억)', data: [3.1,3.4,3.8,4.0,3.2,2.9,3.5,4.1,3.9,4.5,3.9,4.2,4.2], borderColor: '#0176D3', backgroundColor: 'rgba(1,118,211,0.06)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 3 },
+      { label: '전년 동기', data: [2.8,3.0,3.2,3.5,2.9,2.7,3.1,3.6,3.4,3.8,3.5,3.7,3.7], borderColor: '#939393', borderDash: [5,5], tension: 0.3, borderWidth: 1.5, pointRadius: 0, fill: false },
+      { label: '4주 이동평균', data: [null,null,null,3.58,3.5,3.48,3.4,3.43,3.6,3.75,3.85,4.13,4.05], borderColor: '#2E844A', borderDash: [3,4], tension: 0.4, borderWidth: 1.5, pointRadius: 0, fill: false }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 11 } } } }, scales: { y: { grid: { color: '#F0F0F0' }, ticks: { callback: v => v + '억' } }, x: { grid: { display: false } } } }
+});
+
+// Chart 2: Category Sales Mix
+new Chart(document.getElementById('categoryMixChart'), {
+  type: 'bar',
+  data: {
+    labels: ['12/16','12/23','12/30','1/6','1/13','1/20','1/27','2/3','2/10'],
+    datasets: [
+      { label: '키보드', data: [2.1,1.8,2.2,2.6,2.5,2.9,2.4,2.7,2.8], backgroundColor: '#0176D3' },
+      { label: '마우스', data: [0.6,0.6,0.7,0.8,0.7,0.9,0.8,0.8,0.7], backgroundColor: '#FE9339' },
+      { label: '액세서리', data: [0.5,0.5,0.6,0.7,0.7,0.7,0.7,0.7,0.7], backgroundColor: '#2E844A' }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 11 } } } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#F0F0F0' }, ticks: { callback: v => v + '억' } } } }
+});
+
+// Chart 3: ABC Analysis (Horizontal Bar)
+new Chart(document.getElementById('abcChart'), {
+  type: 'bar',
+  data: {
+    labels: ['매출 분포'],
+    datasets: [
+      { label: 'A등급 (80%)', data: [80], backgroundColor: '#BA0517', barThickness: 32 },
+      { label: 'B등급 (15%)', data: [15], backgroundColor: '#FE9339', barThickness: 32 },
+      { label: 'C등급 (5%)', data: [5], backgroundColor: '#C9C9C9', barThickness: 32 }
+    ]
+  },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 11 } } } }, scales: { x: { stacked: true, display: false, max: 100 }, y: { stacked: true, display: false } } }
+});
+
+// Chart 4: Channel Doughnut
+new Chart(document.getElementById('channelDoughnut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['자사몰', '마켓플레이스', 'B2B 도매', '소매', '기타'],
+    datasets: [{
+      data: [35, 28, 22, 10, 5],
+      backgroundColor: ['#0176D3', '#FE9339', '#2E844A', '#032D60', '#C9C9C9'],
+      borderWidth: 0
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+});
+</script>
+</body>
+</html>
