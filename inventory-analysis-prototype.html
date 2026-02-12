@@ -189,14 +189,14 @@ tailwind.config = {
 </nav>
 
 <!-- Filter Bar -->
-<div class="bg-white border-b border-sf-border-light px-4 py-2.5">
+<div class="bg-sf-card border-b border-sf-border-light px-4 py-2.5">
   <div class="max-w-[1440px] mx-auto flex flex-wrap gap-2 items-center">
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>전체 카테고리</option></select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>Keychron</option></select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>상품</option></select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>옵션</option></select>
-    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>판매중</option></select>
-    <input type="date" value="2026-02-12" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text"><option>전체 카테고리</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text"><option>Keychron</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text"><option>상품</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text"><option>옵션</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text"><option>판매중</option></select>
+    <input type="date" value="2026-02-12" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-sf-card text-sf-text">
     <button class="text-xs bg-sf-blue text-white px-4 py-1.5 rounded hover:bg-blue-700 font-medium">분석</button>
   </div>
 </div>
@@ -258,7 +258,7 @@ tailwind.config = {
       <!-- Stage 1: 발주완료 -->
       <div class="pipeline-stage flex-1 min-w-[140px]">
         <div class="pipeline-connector">
-          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-sf-card">
             <div class="text-2xs text-sf-text-tertiary mb-1">발주완료</div>
             <div class="text-xl font-bold text-sf-text">85</div>
             <div class="text-2xs text-sf-text-secondary">23,400개</div>
@@ -272,7 +272,7 @@ tailwind.config = {
       <!-- Stage 2: 입고예정 -->
       <div class="pipeline-stage flex-1 min-w-[140px]">
         <div class="pipeline-connector">
-          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-sf-card">
             <div class="text-2xs text-sf-text-tertiary mb-1">입고예정</div>
             <div class="text-xl font-bold text-sf-text">62</div>
             <div class="text-2xs text-sf-text-secondary">15,025개</div>
@@ -286,7 +286,7 @@ tailwind.config = {
       <!-- Stage 3: 재고보유 -->
       <div class="pipeline-stage flex-1 min-w-[140px]">
         <div class="pipeline-connector">
-          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-sf-card">
             <div class="text-2xs text-sf-text-tertiary mb-1">재고보유</div>
             <div class="text-xl font-bold text-sf-text">599</div>
             <div class="text-2xs text-sf-text-secondary">28.0억 · 34.1%</div>
@@ -300,7 +300,7 @@ tailwind.config = {
       <!-- Stage 4: 판매활성 -->
       <div class="pipeline-stage flex-1 min-w-[140px]">
         <div class="pipeline-connector">
-          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-sf-card">
             <div class="text-2xs text-sf-text-tertiary mb-1">판매활성</div>
             <div class="text-xl font-bold text-sf-text">639</div>
             <div class="text-2xs text-sf-text-secondary">주간 ~4.2억</div>
@@ -310,7 +310,7 @@ tailwind.config = {
       <!-- Stage 5: 소진임박 -->
       <div class="pipeline-stage flex-1 min-w-[140px]">
         <div>
-          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-sf-card">
             <div class="text-2xs text-sf-text-tertiary mb-1">소진임박</div>
             <div class="text-xl font-bold text-sf-text">41</div>
             <div class="text-2xs text-sf-text-secondary">1주 이내</div>
@@ -399,7 +399,7 @@ tailwind.config = {
             <span class="text-2xs font-semibold text-sf-error">×2.3</span>
           </div>
           <div class="text-2xs text-sf-text-tertiary">주 65개 → 152개 · 예상보다 3주 빨리 소진</div>
-          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+          <div class="mt-1.5 w-full bg-sf-border-light rounded-full h-1">
             <div class="bg-sf-error h-1 rounded-full" style="width:80%"></div>
           </div>
         </div>
@@ -409,7 +409,7 @@ tailwind.config = {
             <span class="text-2xs font-semibold text-sf-warning-dark">×1.8</span>
           </div>
           <div class="text-2xs text-sf-text-tertiary">주 32개 → 56개 · 예상보다 2주 빨리 소진</div>
-          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+          <div class="mt-1.5 w-full bg-sf-border-light rounded-full h-1">
             <div class="h-1 rounded-full bg-sf-warning" style="width:65%"></div>
           </div>
         </div>
@@ -419,7 +419,7 @@ tailwind.config = {
             <span class="text-2xs font-semibold text-sf-text-secondary">×1.6</span>
           </div>
           <div class="text-2xs text-sf-text-tertiary">주 37개 → 59개 · 예상보다 1.5주 빨리 소진</div>
-          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+          <div class="mt-1.5 w-full bg-sf-border-light rounded-full h-1">
             <div class="bg-sf-border h-1 rounded-full" style="width:50%"></div>
           </div>
         </div>
@@ -532,10 +532,10 @@ tailwind.config = {
         </tr>
         <tr>
           <td class="p-2 text-2xs font-medium text-sf-text-secondary">무판매<br><span class="text-sf-text-tertiary font-normal">90일 0건</span></td>
-          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">2</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.1억</div></div></td>
-          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">7</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
-          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">15</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
-          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">33</div><div class="text-2xs text-sf-text-tertiary">처분검토</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-sf-bg"><div class="text-base font-bold text-sf-text-secondary">2</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-sf-bg"><div class="text-base font-bold text-sf-text-secondary">7</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-sf-bg"><div class="text-base font-bold text-sf-text-secondary">15</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-sf-bg"><div class="text-base font-bold text-sf-text-secondary">33</div><div class="text-2xs text-sf-text-tertiary">처분검토</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
           <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">105</div><div class="text-2xs text-sf-error">처분필요</div><div class="text-2xs text-sf-text-tertiary">4.8억</div></div></td>
         </tr>
       </tbody>
@@ -576,11 +576,11 @@ tailwind.config = {
 
   <!-- Tab 1: Action Queue -->
   <div class="sf-tab-content active" id="tab-action-queue">
-    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-sf-bg/50 action-bar">
       <div class="text-xs text-sf-text-secondary">긴급발주 + 추가발주 통합 · 매출 영향도 순</div>
       <div class="flex gap-2">
         <button class="text-2xs bg-sf-blue text-white px-3 py-1 rounded hover:bg-blue-700 font-medium">일괄 발주 요청</button>
-        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-sf-bg">CSV</button>
       </div>
     </div>
     <div class="mobile-table-wrap">
@@ -679,7 +679,7 @@ tailwind.config = {
 
   <!-- Tab 2: Incoming Tracker -->
   <div class="sf-tab-content" id="tab-incoming-tracker">
-    <div class="px-4 py-3 border-b border-sf-border-light bg-gray-50/50">
+    <div class="px-4 py-3 border-b border-sf-border-light bg-sf-bg/50">
       <div class="text-xs text-sf-text-secondary">발주별 입고 상태 · 해당 SKU 품절 전 도착 가능 여부</div>
     </div>
     <div class="p-4 space-y-3">
@@ -743,7 +743,7 @@ tailwind.config = {
 
   <!-- Tab 3: Excess Management -->
   <div class="sf-tab-content" id="tab-excess-mgmt">
-    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-sf-bg/50 action-bar">
       <div class="text-xs text-sf-text-secondary">3단계 분류별 추천 조치</div>
       <div class="flex gap-2 text-2xs">
         <span class="sf-badge bg-sf-badge-neutral-bg text-sf-text-secondary">사장 87</span>
@@ -768,7 +768,7 @@ tailwind.config = {
 
   <!-- Tab 4: All SKU -->
   <div class="sf-tab-content" id="tab-all-sku">
-    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50 action-bar">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-sf-bg/50 action-bar">
       <div class="text-xs text-sf-text-secondary">속도 분류 + 상태 컬러코딩</div>
       <div class="flex gap-2">
         <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 속도</option><option>빠른</option><option>보통</option><option>느린</option><option>무판매</option></select>
