@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>재고 분석 - ToBe Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        // Salesforce-inspired neutral palette
+        'sf-nav': '#032D60',
+        'sf-blue': '#0176D3',
+        'sf-blue-light': '#EBF5FE',
+        'sf-border': '#C9C9C9',
+        'sf-border-light': '#E5E5E5',
+        'sf-bg': '#F3F3F3',
+        'sf-card': '#FFFFFF',
+        'sf-text': '#181818',
+        'sf-text-secondary': '#706E6B',
+        'sf-text-tertiary': '#939393',
+        // Status - used sparingly
+        'sf-error': '#BA0517',
+        'sf-warning': '#FE9339',
+        'sf-success': '#2E844A',
+        'sf-info': '#0176D3',
+        'sf-error-bg': '#FEF1EE',
+        'sf-warning-bg': '#FFF8E6',
+        'sf-success-bg': '#EBF7E6',
+      },
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans KR', 'sans-serif'],
+      },
+      fontSize: {
+        '2xs': '0.6875rem',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background: #F3F3F3; -webkit-font-smoothing: antialiased; }
+  /* Salesforce-style card */
+  .sf-card { background: #fff; border: 1px solid #E5E5E5; border-radius: 4px; }
+  .sf-card-header { padding: 12px 16px; border-bottom: 1px solid #E5E5E5; }
+  .sf-card-body { padding: 16px; }
+  /* Pipeline connector */
+  .pipeline-connector { position: relative; }
+  .pipeline-connector::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -20px;
+    width: 20px;
+    height: 1px;
+    background: #C9C9C9;
+  }
+  .pipeline-connector::before {
+    content: '';
+    position: absolute;
+    top: calc(50% - 3px);
+    right: -22px;
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid #C9C9C9;
+  }
+  .pipeline-stage:last-child .pipeline-connector::after,
+  .pipeline-stage:last-child .pipeline-connector::before { display: none; }
+  /* Tab */
+  .sf-tab { padding: 10px 16px; font-size: 13px; color: #706E6B; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .sf-tab:hover { color: #181818; }
+  .sf-tab.active { color: #0176D3; border-bottom-color: #0176D3; font-weight: 600; }
+  .sf-tab-content { display: none; }
+  .sf-tab-content.active { display: block; }
+  /* Status dot */
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  /* Table */
+  .sf-table th { font-size: 11px; font-weight: 600; color: #706E6B; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; background: #FAFAFB; border-bottom: 1px solid #E5E5E5; }
+  .sf-table td { font-size: 13px; padding: 10px 12px; border-bottom: 1px solid #F0F0F0; color: #181818; }
+  .sf-table tr:hover td { background: #F3F3F3; }
+  /* Badge */
+  .sf-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; display: inline-block; }
+  /* Velocity cell */
+  .vel-cell { border: 1px solid #E5E5E5; border-radius: 4px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.15s; }
+  .vel-cell:hover { background: #F3F3F3; }
+  /* Priority bar */
+  .priority-bar { width: 3px; border-radius: 2px; position: absolute; left: 0; top: 0; bottom: 0; }
+</style>
+</head>
+<body class="min-h-screen text-sf-text">
+
+<!-- Navigation Bar -->
+<nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
+  <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
+  <span class="text-white/60 text-xs">재고 분석</span>
+  <div class="ml-auto text-xs text-white/50">2026. 2. 12. | Keychron | 1,758 SKU</div>
+</nav>
+
+<!-- Filter Bar -->
+<div class="bg-white border-b border-sf-border-light px-4 py-2.5">
+  <div class="max-w-[1440px] mx-auto flex flex-wrap gap-2 items-center">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>전체 카테고리</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>Keychron</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>상품</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>옵션</option></select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text"><option>판매중</option></select>
+    <input type="date" value="2026-02-12" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+    <button class="text-xs bg-sf-blue text-white px-4 py-1.5 rounded hover:bg-blue-700 font-medium">분석</button>
+  </div>
+</div>
+
+<main class="max-w-[1440px] mx-auto px-4 py-4 space-y-4">
+
+<!-- ===== SECTION 1: Key Metrics ===== -->
+<div class="grid grid-cols-4 gap-3">
+  <div class="sf-card p-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="status-dot bg-sf-error"></span>
+      <span class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide">품절 판매중</span>
+    </div>
+    <div class="text-2xl font-bold text-sf-text">15</div>
+    <div class="text-2xs text-sf-text-tertiary mt-0.5">매출 손실 추정 ~1,200만/주</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="status-dot bg-sf-warning"></span>
+      <span class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide">소진 임박</span>
+    </div>
+    <div class="text-2xl font-bold text-sf-text">41</div>
+    <div class="text-2xs text-sf-text-tertiary mt-0.5">1주 내 재고 소진 예상</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="status-dot bg-sf-warning"></span>
+      <span class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide">추가 발주 필요</span>
+    </div>
+    <div class="text-2xl font-bold text-sf-text">9</div>
+    <div class="text-2xs text-sf-text-tertiary mt-0.5">입고 반영 후에도 4주분 부족</div>
+  </div>
+  <div class="sf-card p-4">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="status-dot bg-sf-info"></span>
+      <span class="text-2xs font-semibold text-sf-text-secondary uppercase tracking-wide">입고 예정</span>
+    </div>
+    <div class="text-2xl font-bold text-sf-text">62 <span class="text-sm font-normal text-sf-text-secondary">SKU</span></div>
+    <div class="text-2xs text-sf-text-tertiary mt-0.5">15,025개 | 이번 주 도착 3건</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: Stock Flow Pipeline ===== -->
+<div class="sf-card">
+  <div class="sf-card-header flex items-center justify-between">
+    <div>
+      <h2 class="text-sm font-semibold text-sf-text">재고 흐름 파이프라인</h2>
+      <p class="text-2xs text-sf-text-tertiary mt-0.5">발주에서 소진까지 전체 흐름</p>
+    </div>
+    <div class="flex items-center gap-4 text-2xs text-sf-text-secondary">
+      <span>흐름 점수 <strong class="text-sf-text">62</strong>/100</span>
+      <span>병목 <strong class="text-sf-error">미발주 47건</strong></span>
+      <span>과잉 <strong class="text-sf-text">14.0억</strong> (50%)</span>
+    </div>
+  </div>
+  <div class="sf-card-body">
+    <!-- Main Pipeline -->
+    <div class="flex items-start gap-10 overflow-x-auto pb-2">
+      <!-- Stage 1: 발주완료 -->
+      <div class="pipeline-stage flex-1 min-w-[140px]">
+        <div class="pipeline-connector">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+            <div class="text-2xs text-sf-text-tertiary mb-1">발주완료</div>
+            <div class="text-xl font-bold text-sf-text">85</div>
+            <div class="text-2xs text-sf-text-secondary">23,400개</div>
+          </div>
+        </div>
+        <div class="mt-2 ml-2 border-l-2 border-sf-error pl-3 py-1">
+          <div class="text-2xs font-medium text-sf-error">미발주 필요 47 SKU</div>
+          <div class="text-2xs text-sf-text-tertiary">발주 없이 재고 4주 미만</div>
+        </div>
+      </div>
+      <!-- Stage 2: 입고예정 -->
+      <div class="pipeline-stage flex-1 min-w-[140px]">
+        <div class="pipeline-connector">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+            <div class="text-2xs text-sf-text-tertiary mb-1">입고예정</div>
+            <div class="text-xl font-bold text-sf-text">62</div>
+            <div class="text-2xs text-sf-text-secondary">15,025개</div>
+          </div>
+        </div>
+        <div class="mt-2 ml-2 border-l-2 border-sf-warning pl-3 py-1">
+          <div class="text-2xs font-medium" style="color:#B95D08">입고 지연 5 SKU</div>
+          <div class="text-2xs text-sf-text-tertiary">예정일 초과 미도착</div>
+        </div>
+      </div>
+      <!-- Stage 3: 재고보유 -->
+      <div class="pipeline-stage flex-1 min-w-[140px]">
+        <div class="pipeline-connector">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+            <div class="text-2xs text-sf-text-tertiary mb-1">재고보유</div>
+            <div class="text-xl font-bold text-sf-text">599</div>
+            <div class="text-2xs text-sf-text-secondary">28.0억 · 34.1%</div>
+          </div>
+        </div>
+        <div class="mt-2 ml-2 border-l-2 border-sf-border pl-3 py-1">
+          <div class="text-2xs font-medium text-sf-text-secondary">비활성 1,221 SKU</div>
+          <div class="text-2xs text-sf-text-tertiary">재고 있으나 판매 없음</div>
+        </div>
+      </div>
+      <!-- Stage 4: 판매활성 -->
+      <div class="pipeline-stage flex-1 min-w-[140px]">
+        <div class="pipeline-connector">
+          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+            <div class="text-2xs text-sf-text-tertiary mb-1">판매활성</div>
+            <div class="text-xl font-bold text-sf-text">639</div>
+            <div class="text-2xs text-sf-text-secondary">주간 ~4.2억</div>
+          </div>
+        </div>
+      </div>
+      <!-- Stage 5: 소진임박 -->
+      <div class="pipeline-stage flex-1 min-w-[140px]">
+        <div>
+          <div class="border border-sf-border-light rounded p-3 text-center bg-white">
+            <div class="text-2xs text-sf-text-tertiary mb-1">소진임박</div>
+            <div class="text-xl font-bold text-sf-text">41</div>
+            <div class="text-2xs text-sf-text-secondary">1주 이내</div>
+          </div>
+        </div>
+        <div class="mt-2 ml-2 border-l-2 border-sf-error pl-3 py-1">
+          <div class="text-2xs font-medium text-sf-error">품절 판매중 15 SKU</div>
+          <div class="text-2xs text-sf-text-tertiary">즉시 조치 필요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: Risk Detection ===== -->
+<div class="grid grid-cols-3 gap-3">
+  <!-- Panel A: 놓쳐진 발주 -->
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">놓쳐진 발주 감지</h3>
+      <p class="text-2xs text-sf-text-tertiary">재고 4주 미만 + 발주 없음</p>
+    </div>
+    <div class="sf-card-body">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">12건</span>
+        <span class="text-2xs text-sf-text-tertiary">주간 위험액 ~580만원</span>
+      </div>
+      <div class="space-y-1.5 mt-3">
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">B1 Pro Space Gray Frame</div>
+            <div class="text-2xs text-sf-text-tertiary">재고 0 · 주 211개 판매</div>
+          </div>
+          <span class="sf-badge bg-sf-error-bg text-sf-error">품절</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">M6 White Silent Mouse</div>
+            <div class="text-2xs text-sf-text-tertiary">재고 6 · 주 80개 판매</div>
+          </div>
+          <span class="text-2xs text-sf-error font-medium">0.5주</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">팜레스트 화이트 K10P</div>
+            <div class="text-2xs text-sf-text-tertiary">재고 2 · 주 102개 판매</div>
+          </div>
+          <span class="text-2xs text-sf-error font-medium">0.1주</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">B1 Pro Retro Red Frame</div>
+            <div class="text-2xs text-sf-text-tertiary">재고 45 · 주 202개 판매</div>
+          </div>
+          <span class="text-2xs text-sf-warning font-medium">1.5주</span>
+        </div>
+        <div class="flex items-center justify-between py-1.5">
+          <div>
+            <div class="text-xs font-medium text-sf-text">C2 Pro 8K 핫스왑</div>
+            <div class="text-2xs text-sf-text-tertiary">재고 178 · 주 56개 판매</div>
+          </div>
+          <span class="text-2xs text-sf-text-secondary font-medium">3.2주</span>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">전체 12건 보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel B: 소진속도 초과 -->
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">소진 속도 초과</h3>
+      <p class="text-2xs text-sf-text-tertiary">발주 시점 대비 판매속도 1.5배 이상</p>
+    </div>
+    <div class="sf-card-body">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">8건</span>
+        <span class="text-2xs text-sf-text-tertiary">발주량 커버 불가 예상</span>
+      </div>
+      <div class="space-y-2.5 mt-3">
+        <div class="py-1.5 border-b border-sf-border-light">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-medium text-sf-text">K10 MAX 파스텔 RGB</span>
+            <span class="text-2xs font-semibold text-sf-error">×2.3</span>
+          </div>
+          <div class="text-2xs text-sf-text-tertiary">주 65개 → 152개 · 예상보다 3주 빨리 소진</div>
+          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+            <div class="bg-sf-error h-1 rounded-full" style="width:80%"></div>
+          </div>
+        </div>
+        <div class="py-1.5 border-b border-sf-border-light">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-medium text-sf-text">C2 Pro 8K 저소음적축</span>
+            <span class="text-2xs font-semibold" style="color:#B95D08">×1.8</span>
+          </div>
+          <div class="text-2xs text-sf-text-tertiary">주 32개 → 56개 · 예상보다 2주 빨리 소진</div>
+          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+            <div class="h-1 rounded-full" style="width:65%;background:#FE9339"></div>
+          </div>
+        </div>
+        <div class="py-1.5 border-b border-sf-border-light">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-medium text-sf-text">M6 Black All Silent</span>
+            <span class="text-2xs font-semibold text-sf-text-secondary">×1.6</span>
+          </div>
+          <div class="text-2xs text-sf-text-tertiary">주 37개 → 59개 · 예상보다 1.5주 빨리 소진</div>
+          <div class="mt-1.5 w-full bg-gray-100 rounded-full h-1">
+            <div class="bg-sf-border h-1 rounded-full" style="width:50%"></div>
+          </div>
+        </div>
+        <div class="py-1.5">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-medium text-sf-text">팜레스트 파스텔 K10P</span>
+            <span class="text-2xs font-semibold text-sf-text-secondary">×1.5</span>
+          </div>
+          <div class="text-2xs text-sf-text-tertiary">주 112개 → 167개</div>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">전체 8건 보기</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel C: 체류 재고 -->
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">체류 재고</h3>
+      <p class="text-2xs text-sf-text-tertiary">자금이 묶인 재고 현황</p>
+    </div>
+    <div class="sf-card-body">
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="text-2xl font-bold text-sf-text">14.0억</span>
+        <span class="text-2xs text-sf-text-tertiary">총 재고 28.0억의 50%</span>
+      </div>
+      <div class="space-y-2.5 mt-3">
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">사장 재고</div>
+            <div class="text-2xs text-sf-text-tertiary">90일간 판매 0건 · 87 SKU</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-sf-text">3.2억</div>
+            <div class="text-2xs text-sf-text-tertiary">반품/처분 권장</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-sf-border-light">
+          <div>
+            <div class="text-xs font-medium text-sf-text">저회전 재고</div>
+            <div class="text-2xs text-sf-text-tertiary">12개월+ 소진 · 173 SKU</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-sf-text">7.8억</div>
+            <div class="text-2xs text-sf-text-tertiary">프로모션 권장</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <div>
+            <div class="text-xs font-medium text-sf-text">확인 필요</div>
+            <div class="text-2xs text-sf-text-tertiary">신규/계절상품 · 15 SKU</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-sf-text">3.0억</div>
+            <div class="text-2xs text-sf-text-tertiary">담당자 검토</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-sf-border-light">
+        <a href="#detail-tabs" class="text-xs text-sf-blue hover:underline">과잉재고 관리</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: Velocity Matrix ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="text-sm font-semibold text-sf-text">SKU 속도 분류 매트릭스</h2>
+    <p class="text-2xs text-sf-text-tertiary mt-0.5">판매 속도 × 재고 커버리지 — 셀 클릭 시 상세 목록</p>
+  </div>
+  <div class="sf-card-body overflow-x-auto">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr>
+          <th class="p-2 text-2xs text-sf-text-tertiary text-left w-20"></th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">≤1주</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">1-4주</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">1-3개월</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">3-12개월</th>
+          <th class="p-2 text-2xs text-center text-sf-text-secondary font-medium">>12개월</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">빠른 회전<br><span class="text-sf-text-tertiary font-normal">상위 20%</span></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">8</div><div class="text-2xs text-sf-error">긴급발주</div><div class="text-2xs text-sf-text-tertiary">2.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-warning bg-sf-warning-bg"><div class="text-base font-bold text-sf-text">23</div><div class="text-2xs" style="color:#B95D08">발주필요</div><div class="text-2xs text-sf-text-tertiary">3.8억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">45</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">5.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">12</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.9억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">3</div><div class="text-2xs text-sf-text-secondary">과잉</div><div class="text-2xs text-sf-text-tertiary">0.8억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">보통 회전<br><span class="text-sf-text-tertiary font-normal">중위 60%</span></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">5</div><div class="text-2xs text-sf-error">긴급발주</div><div class="text-2xs text-sf-text-tertiary">0.7억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">18</div><div class="text-2xs text-sf-text-secondary">발주검토</div><div class="text-2xs text-sf-text-tertiary">1.4억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">89</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">4.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-success bg-sf-success-bg"><div class="text-base font-bold text-sf-text">67</div><div class="text-2xs text-sf-success">적정</div><div class="text-2xs text-sf-text-tertiary">2.8억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">28</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">느린 회전<br><span class="text-sf-text-tertiary font-normal">하위 20%</span></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">3</div><div class="text-2xs text-sf-text-secondary">확인필요</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">11</div><div class="text-2xs text-sf-text-secondary">적정</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">24</div><div class="text-2xs text-sf-text-secondary">적정</div><div class="text-2xs text-sf-text-tertiary">0.9억</div></div></td>
+          <td class="p-1"><div class="vel-cell"><div class="text-base font-bold text-sf-text">42</div><div class="text-2xs text-sf-text-secondary">과잉주의</div><div class="text-2xs text-sf-text-tertiary">1.7억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">58</div><div class="text-2xs text-sf-error">과잉처분</div><div class="text-2xs text-sf-text-tertiary">3.1억</div></div></td>
+        </tr>
+        <tr>
+          <td class="p-2 text-2xs font-medium text-sf-text-secondary">무판매<br><span class="text-sf-text-tertiary font-normal">90일 0건</span></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">2</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.1억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">7</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">15</div><div class="text-2xs text-sf-text-tertiary">확인</div><div class="text-2xs text-sf-text-tertiary">0.5억</div></div></td>
+          <td class="p-1"><div class="vel-cell bg-gray-50"><div class="text-base font-bold text-sf-text-secondary">33</div><div class="text-2xs text-sf-text-tertiary">처분검토</div><div class="text-2xs text-sf-text-tertiary">1.2억</div></div></td>
+          <td class="p-1"><div class="vel-cell border-sf-error bg-sf-error-bg"><div class="text-base font-bold text-sf-text">105</div><div class="text-2xs text-sf-error">처분필요</div><div class="text-2xs text-sf-text-tertiary">4.8억</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION 5: Trend Charts ===== -->
+<div class="grid grid-cols-2 gap-3">
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">재고 상태 추이</h3>
+      <p class="text-2xs text-sf-text-tertiary">최근 8주</p>
+    </div>
+    <div class="sf-card-body" style="height:260px">
+      <canvas id="statusTrendChart"></canvas>
+    </div>
+  </div>
+  <div class="sf-card">
+    <div class="sf-card-header">
+      <h3 class="text-sm font-semibold text-sf-text">재고 소진 예측</h3>
+      <p class="text-2xs text-sf-text-tertiary">B1 Pro Retro Red Frame — 현재 속도 기준</p>
+    </div>
+    <div class="sf-card-body" style="height:260px">
+      <canvas id="depletionChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: Detailed Tabs ===== -->
+<div class="sf-card" id="detail-tabs">
+  <div class="border-b border-sf-border-light flex overflow-x-auto">
+    <button class="sf-tab active" data-tab="action-queue">조치 필요 대기열 <span class="text-2xs ml-1 text-sf-text-tertiary">66</span></button>
+    <button class="sf-tab" data-tab="incoming-tracker">입고 추적 <span class="text-2xs ml-1 text-sf-text-tertiary">62</span></button>
+    <button class="sf-tab" data-tab="excess-mgmt">과잉재고 관리 <span class="text-2xs ml-1 text-sf-text-tertiary">275</span></button>
+    <button class="sf-tab" data-tab="all-sku">전체 SKU <span class="text-2xs ml-1 text-sf-text-tertiary">1,758</span></button>
+  </div>
+
+  <!-- Tab 1: Action Queue -->
+  <div class="sf-tab-content active" id="tab-action-queue">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50">
+      <div class="text-xs text-sf-text-secondary">긴급발주 + 추가발주 통합 · 매출 영향도 순</div>
+      <div class="flex gap-2">
+        <button class="text-2xs bg-sf-blue text-white px-3 py-1 rounded hover:bg-blue-700 font-medium">일괄 발주 요청</button>
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded hover:bg-gray-50">CSV</button>
+      </div>
+    </div>
+    <table class="sf-table w-full">
+      <thead>
+        <tr>
+          <th class="text-left w-16">순위</th>
+          <th class="text-left">상품코드</th>
+          <th class="text-left">상품 / 옵션</th>
+          <th class="text-right">현재 재고</th>
+          <th class="text-right">주간 판매</th>
+          <th class="text-right">예상 품절일</th>
+          <th class="text-right">입고 예정</th>
+          <th class="text-center">판매 추세</th>
+          <th class="text-right">주간 매출</th>
+          <th class="text-center w-20">조치</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="relative">
+          <td><div class="priority-bar bg-sf-error"></div><span class="sf-badge bg-sf-error-bg text-sf-error">P1</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0396-0001</td>
+          <td><span class="font-medium">키크론 B Pro</span><br><span class="text-2xs text-sf-text-tertiary">B1 Pro Space Gray Frame</span></td>
+          <td class="text-right font-semibold text-sf-error">0</td>
+          <td class="text-right">211</td>
+          <td class="text-right font-medium text-sf-error">품절중</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-error">↑ +12%</td>
+          <td class="text-right font-medium">18,580,248</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
+        </tr>
+        <tr class="relative">
+          <td><div class="priority-bar bg-sf-error"></div><span class="sf-badge bg-sf-error-bg text-sf-error">P1</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0084-0052</td>
+          <td><span class="font-medium">키크론 마우스</span><br><span class="text-2xs text-sf-text-tertiary">M6 White Silent Micro</span></td>
+          <td class="text-right font-semibold text-sf-error">6</td>
+          <td class="text-right">80</td>
+          <td class="text-right font-medium text-sf-error">2/13</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-error">↑ +8%</td>
+          <td class="text-right font-medium">11,391,030</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
+        </tr>
+        <tr class="relative">
+          <td><div class="priority-bar" style="background:#FE9339"></div><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">P2</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0396-0006</td>
+          <td><span class="font-medium">키크론 B Pro</span><br><span class="text-2xs text-sf-text-tertiary">B1 Pro Retro Red Frame</span></td>
+          <td class="text-right font-semibold" style="color:#B95D08">45</td>
+          <td class="text-right">202</td>
+          <td class="text-right font-medium" style="color:#B95D08">2/14</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-text-secondary">→ 0%</td>
+          <td class="text-right font-medium">22,825,152</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
+        </tr>
+        <tr class="relative">
+          <td><div class="priority-bar" style="background:#FE9339"></div><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">P2</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0108-0067</td>
+          <td><span class="font-medium">팜레스트</span><br><span class="text-2xs text-sf-text-tertiary">실리콘 팜레스트 레트로 파스텔</span></td>
+          <td class="text-right font-semibold" style="color:#B95D08">76</td>
+          <td class="text-right">167</td>
+          <td class="text-right font-medium" style="color:#B95D08">2/15</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-error">↑ +15%</td>
+          <td class="text-right font-medium">6,680,560</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주요청</button></td>
+        </tr>
+        <tr class="relative">
+          <td><div class="priority-bar bg-sf-border"></div><span class="sf-badge" style="background:#EEE;color:#706E6B">P3</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td>
+          <td><span class="font-medium">키크론 B</span><br><span class="text-2xs text-sf-text-tertiary">Space Gray Frame</span></td>
+          <td class="text-right">267</td>
+          <td class="text-right">66</td>
+          <td class="text-right text-sf-text-secondary">3/16</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-success">↓ -5%</td>
+          <td class="text-right font-medium">15,906,677</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주검토</button></td>
+        </tr>
+        <tr class="relative">
+          <td><div class="priority-bar bg-sf-info"></div><span class="sf-badge bg-sf-blue-light text-sf-blue">P4</span></td>
+          <td class="text-2xs text-sf-text-tertiary">0029-0405-0021</td>
+          <td><span class="font-medium">K10 Pro SE</span><br><span class="text-2xs text-sf-text-tertiary">ZMK 핫스왑 저소음바나나축</span></td>
+          <td class="text-right">116</td>
+          <td class="text-right">28</td>
+          <td class="text-right text-sf-text-secondary">3/26</td>
+          <td class="text-right text-sf-text-tertiary">—</td>
+          <td class="text-center text-2xs text-sf-error">↑ +22%</td>
+          <td class="text-right font-medium">24,994,560</td>
+          <td class="text-center"><button class="text-2xs text-sf-blue hover:underline font-medium">발주검토</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tab 2: Incoming Tracker -->
+  <div class="sf-tab-content" id="tab-incoming-tracker">
+    <div class="px-4 py-3 border-b border-sf-border-light bg-gray-50/50">
+      <div class="text-xs text-sf-text-secondary">발주별 입고 상태 · 해당 SKU 품절 전 도착 가능 여부</div>
+    </div>
+    <div class="p-4 space-y-3">
+      <!-- Late -->
+      <div class="border border-sf-border-light rounded overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2.5 bg-sf-error-bg border-b border-sf-border-light">
+          <div class="flex items-center gap-3">
+            <span class="sf-badge bg-sf-error text-white">지연</span>
+            <div><span class="text-sm font-medium text-sf-text">PO-2026-0198</span> <span class="text-2xs text-sf-text-tertiary ml-2">Keychron 본사 · 발주 2026-01-25</span></div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-semibold text-sf-error">예정일 초과 +3일</div>
+            <div class="text-2xs text-sf-text-tertiary">예정: 2/9 → 미도착</div>
+          </div>
+        </div>
+        <table class="sf-table w-full">
+          <thead><tr><th class="text-left">SKU</th><th class="text-right">발주 수량</th><th class="text-right">현재 재고</th><th class="text-right">품절 예상</th><th class="text-center">상태</th></tr></thead>
+          <tbody>
+            <tr><td>B1 Pro Space Gray Frame</td><td class="text-right">500</td><td class="text-right font-semibold text-sf-error">0</td><td class="text-right text-sf-error font-medium">이미 품절</td><td class="text-center"><span class="status-dot bg-sf-error"></span></td></tr>
+            <tr><td>B1 Pro Retro Red Frame</td><td class="text-right">300</td><td class="text-right font-semibold" style="color:#B95D08">45</td><td class="text-right" style="color:#B95D08">2/14</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- On-time -->
+      <div class="border border-sf-border-light rounded overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2.5 bg-sf-success-bg border-b border-sf-border-light">
+          <div class="flex items-center gap-3">
+            <span class="sf-badge bg-sf-success text-white">정상</span>
+            <div><span class="text-sm font-medium text-sf-text">PO-2026-0215</span> <span class="text-2xs text-sf-text-tertiary ml-2">Keychron 본사 · 발주 2026-02-01</span></div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-semibold text-sf-success">D-5 (2/17 도착)</div>
+            <div class="text-2xs text-sf-text-tertiary">통관 진행중</div>
+          </div>
+        </div>
+        <table class="sf-table w-full">
+          <thead><tr><th class="text-left">SKU</th><th class="text-right">발주 수량</th><th class="text-right">현재 재고</th><th class="text-right">품절 예상</th><th class="text-center">상태</th></tr></thead>
+          <tbody>
+            <tr><td>K10 MAX 파스텔 RGB</td><td class="text-right">1,200</td><td class="text-right">299</td><td class="text-right text-sf-text-secondary">2/25</td><td class="text-center"><span class="status-dot bg-sf-success"></span></td></tr>
+            <tr><td>팜레스트 실리콘 K10P</td><td class="text-right">800</td><td class="text-right">832</td><td class="text-right text-sf-text-secondary">3/10</td><td class="text-center"><span class="status-dot bg-sf-success"></span></td></tr>
+            <tr><td>C2 Pro 8K 핫스왑</td><td class="text-right">200</td><td class="text-right">178</td><td class="text-right" style="color:#B95D08">2/18</td><td class="text-center"><span class="status-dot bg-sf-warning"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Upcoming -->
+      <div class="border border-sf-border-light rounded overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-sf-border-light">
+          <div class="flex items-center gap-3">
+            <span class="sf-badge bg-sf-blue-light text-sf-blue">예정</span>
+            <div><span class="text-sm font-medium text-sf-text">PO-2026-0228</span> <span class="text-2xs text-sf-text-tertiary ml-2">Keychron 본사 · 발주 2026-02-08</span></div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-semibold text-sf-blue">D-16 (2/28 도착)</div>
+            <div class="text-2xs text-sf-text-tertiary">생산 진행중</div>
+          </div>
+        </div>
+        <div class="px-4 py-2.5 text-2xs text-sf-text-tertiary">12 SKU · 총 8,500개</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Excess Management -->
+  <div class="sf-tab-content" id="tab-excess-mgmt">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50">
+      <div class="text-xs text-sf-text-secondary">3단계 분류별 추천 조치</div>
+      <div class="flex gap-2 text-2xs">
+        <span class="sf-badge" style="background:#EEE;color:#706E6B">사장 87</span>
+        <span class="sf-badge" style="background:#EEE;color:#706E6B">저회전 173</span>
+        <span class="sf-badge" style="background:#EEE;color:#706E6B">확인필요 15</span>
+      </div>
+    </div>
+    <table class="sf-table w-full">
+      <thead>
+        <tr><th class="text-left">분류</th><th class="text-left">상품 / 옵션</th><th class="text-right">재고</th><th class="text-right">재고 금액</th><th class="text-right">최종 판매일</th><th class="text-right">소진(월)</th><th class="text-center">추천 조치</th><th class="text-center w-10">선택</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="sf-badge bg-sf-error-bg text-sf-error">사장</span></td><td><span class="font-medium">EX75 HE 블랙 8K</span><br><span class="text-2xs text-sf-text-tertiary">마그네틱 핫스왑</span></td><td class="text-right">792</td><td class="text-right font-medium">39,921,770</td><td class="text-right text-sf-error">2025-11-15</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+        <tr><td><span class="sf-badge bg-sf-error-bg text-sf-error">사장</span></td><td><span class="font-medium">키스킨 B1</span><br><span class="text-2xs text-sf-text-tertiary">KSB1</span></td><td class="text-right">1,798</td><td class="text-right font-medium">2,124,516</td><td class="text-right text-sf-error">2025-10-22</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-center"><span class="text-2xs text-sf-error font-medium">반품/처분</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+        <tr><td><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">저회전</span></td><td><span class="font-medium">더스트커버 KSA</span><br><span class="text-2xs text-sf-text-tertiary">DC-6 Full 100%</span></td><td class="text-right">2,779</td><td class="text-right font-medium">14,178,486</td><td class="text-right text-sf-text-secondary">2026-02-05</td><td class="text-right text-sf-text-secondary">22.7</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+        <tr><td><span class="sf-badge bg-sf-warning-bg" style="color:#B95D08">저회전</span></td><td><span class="font-medium">K10 Pro SE 2.4G</span><br><span class="text-2xs text-sf-text-tertiary">핫스왑 바나나축(구)</span></td><td class="text-right">408</td><td class="text-right font-medium">26,348,886</td><td class="text-right text-sf-text-secondary">2026-02-10</td><td class="text-right text-sf-text-secondary">17.2</td><td class="text-center"><span class="text-2xs font-medium" style="color:#B95D08">프로모션</span></td><td class="text-center"><input type="checkbox" class="w-3.5 h-3.5"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tab 4: All SKU -->
+  <div class="sf-tab-content" id="tab-all-sku">
+    <div class="px-4 py-3 flex items-center justify-between border-b border-sf-border-light bg-gray-50/50">
+      <div class="text-xs text-sf-text-secondary">속도 분류 + 상태 컬러코딩</div>
+      <div class="flex gap-2">
+        <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 속도</option><option>빠른</option><option>보통</option><option>느린</option><option>무판매</option></select>
+        <select class="text-2xs border border-sf-border rounded px-2 py-1"><option>전체 상태</option></select>
+        <button class="text-2xs border border-sf-border text-sf-text-secondary px-3 py-1 rounded">EXCEL</button>
+      </div>
+    </div>
+    <table class="sf-table w-full">
+      <thead><tr><th class="text-left w-12">속도</th><th class="text-left">상품코드</th><th class="text-left">상품 / 옵션</th><th class="text-right">재고</th><th class="text-right">주간 판매</th><th class="text-right">소진(주)</th><th class="text-right">3달 매출</th><th class="text-center">상태</th></tr></thead>
+      <tbody>
+        <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0396-0001</td><td><span class="font-medium">B1 Pro Space Gray Frame</span></td><td class="text-right font-semibold text-sf-error">0</td><td class="text-right">211</td><td class="text-right text-sf-error">0</td><td class="text-right">18,580,248</td><td class="text-center"><span class="status-dot bg-sf-error mr-1"></span><span class="text-2xs text-sf-error">품절</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">빠른</td><td class="text-2xs text-sf-text-tertiary">0029-0108-0031</td><td><span class="font-medium">팜레스트 실리콘 K10P</span></td><td class="text-right">832</td><td class="text-right">141</td><td class="text-right text-sf-success">5.9</td><td class="text-right">10,455,798</td><td class="text-center"><span class="status-dot bg-sf-success mr-1"></span><span class="text-2xs text-sf-success">정상</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">보통</td><td class="text-2xs text-sf-text-tertiary">0029-0306-0020</td><td><span class="font-medium">B Space Gray Frame</span></td><td class="text-right">267</td><td class="text-right">66</td><td class="text-right text-sf-text-secondary">4.0</td><td class="text-right">15,906,677</td><td class="text-center"><span class="status-dot bg-sf-warning mr-1"></span><span class="text-2xs" style="color:#B95D08">주의</span></td></tr>
+        <tr><td class="text-2xs text-sf-text-tertiary">무판매</td><td class="text-2xs text-sf-text-tertiary">0029-0509-0001</td><td><span class="font-medium">EX75 HE 블랙 8K</span></td><td class="text-right text-sf-text-secondary">792</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-right text-sf-text-tertiary">∞</td><td class="text-right text-sf-text-tertiary">0</td><td class="text-center"><span class="status-dot bg-sf-border mr-1"></span><span class="text-2xs text-sf-text-tertiary">사장</span></td></tr>
+      </tbody>
+    </table>
+    <div class="px-4 py-3 text-center text-2xs text-sf-text-tertiary border-t border-sf-border-light">1,758 SKU 중 4건 표시 (프로토타입)</div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// Tab switching
+document.querySelectorAll('.sf-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sf-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sf-tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Chart defaults - minimal Salesforce style
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#706E6B';
+
+// Chart A: Status Trend
+new Chart(document.getElementById('statusTrendChart'), {
+  type: 'line',
+  data: {
+    labels: ['1/6', '1/13', '1/20', '1/27', '2/3', '2/10', '2/12'],
+    datasets: [
+      { label: '품절', data: [8,10,9,12,11,14,15], borderColor: '#BA0517', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+      { label: '소진임박', data: [28,32,30,35,38,40,41], borderColor: '#FE9339', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+      { label: '정상', data: [195,192,198,190,188,185,183], borderColor: '#2E844A', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 },
+      { label: '과잉', data: [250,255,260,265,270,273,275], borderColor: '#939393', backgroundColor: 'transparent', tension: 0.3, borderWidth: 1.5, pointRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 16, font: { size: 10 } } } },
+    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#F0F0F0' }, border: { display: false } } }
+  }
+});
+
+// Chart B: Depletion Forecast
+new Chart(document.getElementById('depletionChart'), {
+  type: 'line',
+  data: {
+    labels: ['2/12','2/14','2/16','2/18','2/20','2/22','2/24','2/26','2/28','3/2'],
+    datasets: [
+      { label: '예상 재고', data: [45,37,29,21,13,5,0,null,null,null], borderColor: '#BA0517', backgroundColor: 'rgba(186,5,23,0.05)', fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2 },
+      { label: '입고 후', data: [null,null,null,null,null,null,null,null,300,272], borderColor: '#0176D3', backgroundColor: 'rgba(1,118,211,0.05)', fill: true, tension: 0.1, borderWidth: 1.5, pointRadius: 2, borderDash: [4,4] }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 16, font: { size: 10 } } } },
+    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#F0F0F0' }, border: { display: false }, title: { display: true, text: '수량', font: { size: 10 }, color: '#939393' } } }
+  }
+});
+</script>
+
+</body>
+</html>
