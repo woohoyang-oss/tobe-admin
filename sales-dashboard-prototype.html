@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매출 분석 대시보드 - ToBe Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        'sf-nav': '#032D60',
+        'sf-blue': '#0176D3',
+        'sf-blue-light': '#EBF5FE',
+        'sf-border': '#C9C9C9',
+        'sf-border-light': '#E5E5E5',
+        'sf-bg': '#F3F3F3',
+        'sf-card': '#FFFFFF',
+        'sf-text': '#181818',
+        'sf-text-secondary': '#706E6B',
+        'sf-text-tertiary': '#939393',
+        'sf-error': '#BA0517',
+        'sf-warning': '#FE9339',
+        'sf-success': '#2E844A',
+        'sf-info': '#0176D3',
+        'sf-error-bg': '#FEF1EE',
+        'sf-warning-bg': '#FFF8E6',
+        'sf-success-bg': '#EBF7E6',
+      },
+      fontFamily: {
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans KR', 'sans-serif'],
+      },
+      fontSize: {
+        '2xs': '0.75rem',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { background: #F3F3F3; -webkit-font-smoothing: antialiased; font-size: 14px; }
+  .sf-card { background: #fff; border: 1px solid #E5E5E5; border-radius: 4px; }
+  .sf-card-header { padding: 14px 18px; border-bottom: 1px solid #E5E5E5; }
+  .sf-card-body { padding: 18px; }
+  .sf-tab { padding: 12px 18px; font-size: 14px; color: #706E6B; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .sf-tab:hover { color: #181818; }
+  .sf-tab.active { color: #0176D3; border-bottom-color: #0176D3; font-weight: 600; }
+  .sf-tab-content { display: none; }
+  .sf-tab-content.active { display: block; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .sf-table th { font-size: 12px; font-weight: 600; color: #706E6B; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; background: #FAFAFB; border-bottom: 1px solid #E5E5E5; text-align: left; }
+  .sf-table td { font-size: 14px; padding: 12px 14px; border-bottom: 1px solid #F0F0F0; color: #181818; }
+  .sf-table tr:hover td { background: #F3F3F3; }
+  .sf-badge { font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 500; display: inline-block; }
+  .period-btn { padding: 4px 14px; font-size: 12px; border-radius: 4px; color: #706E6B; cursor: pointer; border: 1px solid #E5E5E5; background: #fff; }
+  .period-btn:hover { background: #F3F3F3; }
+  .period-btn.active { background: #0176D3; color: white; font-weight: 600; border-color: #0176D3; }
+  .progress-bar-bg { background: #E5E5E5; border-radius: 4px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .kpi-tile { transition: box-shadow 0.15s; cursor: pointer; }
+  .kpi-tile:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .chart-container { position: relative; height: 280px; }
+  .doughnut-container { position: relative; height: 260px; }
+  .insight-box { border-left: 3px solid #FE9339; background: #FFF8E6; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 13px; color: #181818; }
+  .insight-box.danger { border-left-color: #BA0517; background: #FEF1EE; }
+  .insight-box.info { border-left-color: #0176D3; background: #EBF5FE; }
+  .collapsible-header { cursor: pointer; user-select: none; }
+  .collapsible-header .chevron { transition: transform 0.2s; }
+  .collapsible-header.open .chevron { transform: rotate(180deg); }
+  .settings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  @media (max-width: 768px) {
+    main { padding: 10px 8px; gap: 10px; }
+    .sf-card-header { padding: 12px 14px; }
+    .sf-card-body { padding: 12px; }
+    nav .ml-auto { display: none; }
+    .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mobile-table-wrap .sf-table { min-width: 700px; }
+    .chart-container { height: 220px !important; }
+    .doughnut-container { height: 200px !important; }
+    .tab-bar-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .settings-grid { grid-template-columns: 1fr !important; }
+    .kpi-grid-8 { grid-template-columns: repeat(2, 1fr) !important; }
+    .goal-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen text-sf-text">
+
+<!-- Navigation Bar -->
+<nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
+  <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
+  <span class="text-white/60 text-xs">매출 분석 대시보드</span>
+  <div class="ml-auto text-xs text-white/50">2026. 2. 12. | 매출 현황 | 4개 브랜드</div>
+</nav>
+
+<!-- Filter Bar -->
+<div class="bg-white border-b border-sf-border-light px-4 py-2.5">
+  <div class="max-w-[1440px] mx-auto flex flex-wrap gap-2 items-center">
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+      <option>전체 브랜드</option><option>키크론</option><option>MOZA</option><option>캐논</option><option>지티기어</option><option>에이퍼</option>
+    </select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+      <option>전체 채널</option><option>ON (온라인)</option><option>OFF (오프라인)</option>
+    </select>
+    <select class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text">
+      <option>전체 담당자</option><option>신진우</option><option>문소현</option><option>김성은</option><option>박혜경</option>
+    </select>
+    <div class="flex items-center gap-1 ml-2">
+      <span class="text-2xs text-sf-text-secondary mr-1">기간:</span>
+      <button class="period-btn" data-period="1w">1주</button>
+      <button class="period-btn active" data-period="1m">1달</button>
+      <button class="period-btn" data-period="3m">3달</button>
+      <button class="period-btn" data-period="6m">6달</button>
+      <button class="period-btn" data-period="1y">1년</button>
+    </div>
+    <input type="month" value="2026-02" class="text-xs border border-sf-border rounded px-2.5 py-1.5 bg-white text-sf-text ml-2">
+    <button class="text-xs bg-sf-blue text-white px-4 py-1.5 rounded hover:bg-blue-700 font-medium">분석</button>
+  </div>
+</div>
+
+<main class="max-w-[1440px] mx-auto px-4 py-4 space-y-4">
+
+<!-- ===== S1. 월 목표 달성 현황 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header flex items-center justify-between">
+    <div>
+      <h2 class="font-semibold text-[15px]">월 목표 달성 현황</h2>
+      <p class="text-2xs text-sf-text-secondary mt-0.5">2026년 2월 | 잔여 영업일 12일</p>
+    </div>
+    <span class="sf-badge bg-sf-warning-bg text-sf-warning">진행 중</span>
+  </div>
+  <div class="sf-card-body">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 goal-grid">
+      <!-- 합계 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-sf-text-secondary">합계</span>
+          <span class="text-xs font-bold text-sf-warning">83.3%</span>
+        </div>
+        <div class="text-lg font-bold">12.15억</div>
+        <div class="text-2xs text-sf-text-tertiary mb-2">목표 14.59억</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill bg-sf-warning" style="width:83.3%"></div>
+        </div>
+        <div class="text-2xs text-sf-text-secondary mt-2">필요 일매출: <b class="text-sf-text">2,033만</b></div>
+      </div>
+      <!-- 키크론 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-sf-text-secondary">키크론</span>
+          <span class="text-xs font-bold text-sf-error">54.7%</span>
+        </div>
+        <div class="text-lg font-bold">6.21억</div>
+        <div class="text-2xs text-sf-text-tertiary mb-2">목표 11.35억</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill bg-sf-error" style="width:54.7%"></div>
+        </div>
+        <div class="text-2xs text-sf-text-secondary mt-2">필요 일매출: <b class="text-sf-error">4,280만</b></div>
+      </div>
+      <!-- 캐논 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-sf-text-secondary">캐논</span>
+          <span class="text-xs font-bold text-sf-success">72.7%</span>
+        </div>
+        <div class="text-lg font-bold">2.18억</div>
+        <div class="text-2xs text-sf-text-tertiary mb-2">목표 3.00억</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill bg-sf-success" style="width:72.7%"></div>
+        </div>
+        <div class="text-2xs text-sf-text-secondary mt-2">필요 일매출: <b class="text-sf-text">683만</b></div>
+      </div>
+      <!-- 에이퍼 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-sf-text-secondary">에이퍼</span>
+          <span class="text-xs font-bold text-sf-error">58.3%</span>
+        </div>
+        <div class="text-lg font-bold">0.14억</div>
+        <div class="text-2xs text-sf-text-tertiary mb-2">목표 0.24억</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill bg-sf-error" style="width:58.3%"></div>
+        </div>
+        <div class="text-2xs text-sf-text-secondary mt-2">필요 일매출: <b class="text-sf-error">83만</b></div>
+      </div>
+      <!-- 지티기어 -->
+      <div class="border border-sf-border-light rounded-lg p-4 border-l-[3px] border-l-sf-warning">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-sf-text-secondary">지티기어</span>
+          <span class="text-xs font-bold text-sf-warning">목표 미설정</span>
+        </div>
+        <div class="text-lg font-bold">3.63억</div>
+        <div class="text-2xs text-sf-warning mb-2">⚠ 목표가 설정되지 않았습니다</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill bg-sf-text-tertiary" style="width:0%"></div>
+        </div>
+        <div class="text-2xs text-sf-warning mt-2">매출 발생 중 → 목표 설정 필요</div>
+      </div>
+    </div>
+    <!-- 페이스 분석 인사이트 -->
+    <div class="mt-3 insight-box danger">
+      <b>페이스 분석:</b> 12일 경과(영업일 60%), 달성 83.3%. 키크론 달성률 54.7%로 잔여 12일간 일 4,280만원 필요 — 현재 일평균(3,450만) 대비 124% 속도 필요. 에이퍼도 목표 대비 부족.
+    </div>
+  </div>
+</div>
+
+<!-- ===== S2. 매출 KPI 요약 타일 ===== -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 kpi-grid-8">
+  <!-- 2월 누적 매출 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">2월 누적 매출</div>
+    <div class="text-lg font-bold">12.15억</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-error">▼ 50.0%</span>
+      <span class="text-2xs text-sf-text-tertiary">전월대비</span>
+    </div>
+  </div>
+  <!-- 일평균 매출 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">일평균 매출</div>
+    <div class="text-lg font-bold">1.01억</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-text-tertiary">전월: 1.17억</span>
+    </div>
+  </div>
+  <!-- ON 매출 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">ON 매출</div>
+    <div class="text-lg font-bold">8.72억</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="sf-badge bg-sf-blue-light text-sf-blue">71.7%</span>
+    </div>
+  </div>
+  <!-- OFF 매출 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">OFF 매출</div>
+    <div class="text-lg font-bold">3.44억</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="sf-badge bg-sf-warning-bg text-sf-warning">28.3%</span>
+    </div>
+  </div>
+  <!-- 주문 건수 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">주문 건수</div>
+    <div class="text-lg font-bold">4,371건</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-error">▼ 57.9%</span>
+      <span class="text-2xs text-sf-text-tertiary">전월</span>
+    </div>
+  </div>
+  <!-- AOV 건당 평균단가 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">AOV (건당단가)</div>
+    <div class="text-lg font-bold">27.8만</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-success">▲ 18.7%</span>
+      <span class="text-2xs text-sf-text-tertiary">전월</span>
+    </div>
+  </div>
+  <!-- YoY 성장률 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">LTL 성장률</div>
+    <div class="text-lg font-bold text-sf-success">+8.2%</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-text-tertiary">전년동월 대비</span>
+    </div>
+  </div>
+  <!-- 신규 비중 -->
+  <div class="sf-card kpi-tile p-4">
+    <div class="text-2xs text-sf-text-secondary mb-1">신규 매출 비중</div>
+    <div class="text-lg font-bold">12.4%</div>
+    <div class="flex items-center gap-1 mt-1">
+      <span class="text-2xs text-sf-success">▲ 2.1%p</span>
+      <span class="text-2xs text-sf-text-tertiary">전월</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S3. 매출 트렌드 차트 3개 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header flex items-center justify-between">
+    <h2 class="font-semibold text-[15px]">매출 트렌드</h2>
+    <div class="flex gap-1">
+      <button class="period-btn active" data-trend="daily">일별</button>
+      <button class="period-btn" data-trend="monthly">월별</button>
+      <button class="period-btn" data-trend="yearly">5개년</button>
+    </div>
+  </div>
+  <div class="sf-card-body">
+    <!-- 일별 매출 추이 (기본 표시) -->
+    <div id="trendDaily" class="sf-tab-content active">
+      <div class="chart-container"><canvas id="dailyTrendChart"></canvas></div>
+      <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">최고 매출일</span><br><b>2/3 (월) 1.82억</b></div>
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">최저 매출일</span><br><b>2/9 (일) 0.21억</b></div>
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">평균 (평일)</span><br><b>1.18억</b></div>
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">평균 (주말)</span><br><b>0.48억</b></div>
+      </div>
+    </div>
+    <!-- 월별 매출 추이 -->
+    <div id="trendMonthly" class="sf-tab-content">
+      <div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div>
+      <div class="mt-3 insight-box info">
+        <b>월별 트렌드:</b> 1월 24.3억 → 2월 12.2억(진행중). 전년 2월 11.2억 대비 +8.2% 성장세 유지. 3~4월 계절 수요 상승 패턴 예상.
+      </div>
+    </div>
+    <!-- 5개년 비교 -->
+    <div id="trendYearly" class="sf-tab-content">
+      <div class="chart-container"><canvas id="yearlyTrendChart"></canvas></div>
+      <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">CAGR (5년)</span><br><b class="text-sf-success">+24.3%</b></div>
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">2025 총매출</span><br><b>218억</b></div>
+        <div class="p-2 bg-sf-bg rounded text-xs"><span class="text-sf-text-secondary">2026 연환산</span><br><b>245억 (추정)</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S4. 채널 분석 (ON/OFF) ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="font-semibold text-[15px]">채널 분석 (Omnichannel)</h2>
+    <p class="text-2xs text-sf-text-secondary mt-0.5">SAP Omnichannel Cockpit + Salesforce AOV 세분화</p>
+  </div>
+  <div class="sf-card-body">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 채널 매출 도넛 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">채널 매출 비중</h3>
+        <div class="doughnut-container"><canvas id="channelDoughnut"></canvas></div>
+        <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:#0176D3"></span>ON (온라인) 8.72억 (71.7%)</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:#FE9339"></span>OFF (오프라인) 3.44억 (28.3%)</div>
+        </div>
+      </div>
+      <!-- 쇼핑몰 Top 10 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">쇼핑몰 매출 Top 10</h3>
+        <div class="mobile-table-wrap">
+          <table class="w-full sf-table text-xs">
+            <thead><tr><th>#</th><th>쇼핑몰</th><th>채널</th><th class="text-right">매출</th><th class="text-right">비중</th><th class="text-right">건수</th><th class="text-right">AOV</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td class="font-medium">브랜드스토어</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">3.71억</td><td class="text-right">30.5%</td><td class="text-right">1,612</td><td class="text-right">23.0만</td></tr>
+              <tr><td>2</td><td class="font-medium">쿠팡(지티)</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right font-medium">2.17억</td><td class="text-right">17.9%</td><td class="text-right">198</td><td class="text-right">109.6만</td></tr>
+              <tr><td>3</td><td class="font-medium">밸류포인트</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right font-medium">0.77억</td><td class="text-right">6.3%</td><td class="text-right">87</td><td class="text-right">88.5만</td></tr>
+              <tr><td>4</td><td class="font-medium">ESM지마켓</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.35억</td><td class="text-right">2.9%</td><td class="text-right">201</td><td class="text-right">17.4만</td></tr>
+              <tr><td>5</td><td class="font-medium">쿠팡(키크론)</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.34억</td><td class="text-right">2.8%</td><td class="text-right">165</td><td class="text-right">20.6만</td></tr>
+              <tr><td>6</td><td class="font-medium">퍼스트몰</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.31억</td><td class="text-right">2.6%</td><td class="text-right">143</td><td class="text-right">21.7만</td></tr>
+              <tr><td>7</td><td class="font-medium">글로와이드</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right font-medium">0.19억</td><td class="text-right">1.6%</td><td class="text-right">34</td><td class="text-right">55.9만</td></tr>
+              <tr><td>8</td><td class="font-medium">네이버스마트</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.18억</td><td class="text-right">1.5%</td><td class="text-right">126</td><td class="text-right">14.3만</td></tr>
+              <tr><td>9</td><td class="font-medium">현대이지웰</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.10억</td><td class="text-right">0.8%</td><td class="text-right">52</td><td class="text-right">19.2만</td></tr>
+              <tr><td>10</td><td class="font-medium">29CM</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right font-medium">0.08억</td><td class="text-right">0.7%</td><td class="text-right">41</td><td class="text-right">19.5만</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- 채널별 AOV 비교 -->
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">채널별 AOV (건당 평균단가)</h3>
+        <div class="chart-container" style="height:200px"><canvas id="aovChart"></canvas></div>
+      </div>
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">신규 vs 기존 거래처</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="border border-sf-border-light rounded-lg p-4 text-center">
+            <div class="text-2xs text-sf-text-secondary">기존 거래처</div>
+            <div class="text-xl font-bold mt-1">10.64억</div>
+            <div class="text-xs text-sf-text-secondary">87.6% | 38개사</div>
+          </div>
+          <div class="border border-sf-border-light rounded-lg p-4 text-center">
+            <div class="text-2xs text-sf-text-secondary">신규 거래처</div>
+            <div class="text-xl font-bold mt-1 text-sf-blue">1.51억</div>
+            <div class="text-xs text-sf-blue">12.4% | 5개사</div>
+          </div>
+        </div>
+        <div class="mt-3 text-xs text-sf-text-secondary">
+          <div class="flex justify-between py-1.5 border-b border-sf-border-light"><span>HHI 집중도 지수</span><b class="text-sf-warning">1,487 (중간 집중)</b></div>
+          <div class="flex justify-between py-1.5 border-b border-sf-border-light"><span>상위 3개사 비중</span><b>54.7%</b></div>
+          <div class="flex justify-between py-1.5"><span>하위 12개사 합계</span><b class="text-sf-error">&lt;5% (효율 검토)</b></div>
+        </div>
+      </div>
+    </div>
+    <!-- 채널 인사이트 -->
+    <div class="mt-4 space-y-2">
+      <div class="insight-box danger">
+        <b>채널 집중 리스크:</b> 쿠팡(지티) OFF 매출 63% 집중 — 수수료 변동 시 리스크. 브랜드스토어 ON 42.5% 집중.
+      </div>
+      <div class="insight-box">
+        <b>AOV 격차:</b> OFF 채널 AOV 79.8만 vs ON 채널 22.1만 (3.6배). OFF는 고단가 B2B, ON은 저단가 소매 → 채널별 차별화 전략 필요.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S5. 브랜드 포트폴리오 분석 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="font-semibold text-[15px]">브랜드 포트폴리오 분석</h2>
+    <p class="text-2xs text-sf-text-secondary mt-0.5">Salesforce Top Selling + SAP GMROI 패턴</p>
+  </div>
+  <div class="sf-card-body">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 브랜드 매출 비중 도넛 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">브랜드별 매출 비중</h3>
+        <div class="doughnut-container"><canvas id="brandDoughnut"></canvas></div>
+      </div>
+      <!-- 브랜드 성과 테이블 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">브랜드 성과 매트릭스</h3>
+        <div class="mobile-table-wrap">
+          <table class="w-full sf-table text-xs">
+            <thead><tr><th>브랜드</th><th class="text-right">1월</th><th class="text-right">2월</th><th class="text-right">MoM%</th><th class="text-right">목표달성</th><th>진단</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="font-medium">키크론</td>
+                <td class="text-right">14.32억</td><td class="text-right font-medium">6.21억</td>
+                <td class="text-right text-sf-error">-56.6%</td>
+                <td class="text-right"><span class="sf-badge bg-sf-error-bg text-sf-error">54.7%</span></td>
+                <td><span class="text-2xs text-sf-error">마케팅 강화</span></td>
+              </tr>
+              <tr>
+                <td class="font-medium">지티기어</td>
+                <td class="text-right">4.21억</td><td class="text-right font-medium">3.63억</td>
+                <td class="text-right text-sf-error">-13.8%</td>
+                <td class="text-right"><span class="sf-badge bg-sf-warning-bg text-sf-warning">미설정</span></td>
+                <td><span class="text-2xs text-sf-warning">목표 설정</span></td>
+              </tr>
+              <tr>
+                <td class="font-medium">캐논</td>
+                <td class="text-right">3.56억</td><td class="text-right font-medium">2.18억</td>
+                <td class="text-right text-sf-error">-38.7%</td>
+                <td class="text-right"><span class="sf-badge bg-sf-success-bg text-sf-success">72.7%</span></td>
+                <td><span class="text-2xs text-sf-text-secondary">안정적</span></td>
+              </tr>
+              <tr>
+                <td class="font-medium">MOZA</td>
+                <td class="text-right">1.23억</td><td class="text-right font-medium">0.53억</td>
+                <td class="text-right text-sf-error">-56.7%</td>
+                <td class="text-right">—</td>
+                <td><span class="text-2xs text-sf-error">급감 주의</span></td>
+              </tr>
+              <tr>
+                <td class="font-medium">파나텍</td>
+                <td class="text-right">0.42억</td><td class="text-right font-medium">0.28억</td>
+                <td class="text-right text-sf-error">-33.3%</td>
+                <td class="text-right">—</td>
+                <td><span class="text-2xs text-sf-text-secondary">소규모</span></td>
+              </tr>
+              <tr>
+                <td class="font-medium">에이퍼</td>
+                <td class="text-right">0.21억</td><td class="text-right font-medium">0.14억</td>
+                <td class="text-right text-sf-error">-33.3%</td>
+                <td class="text-right"><span class="sf-badge bg-sf-error-bg text-sf-error">58.3%</span></td>
+                <td><span class="text-2xs text-sf-error">목표 미달</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- 수량 vs 매출 비중 갭 분석 -->
+    <div class="mt-4">
+      <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">수량 비중 vs 매출 비중 갭 분석 (단가 영향도)</h3>
+      <div class="chart-container" style="height:200px"><canvas id="gapChart"></canvas></div>
+    </div>
+    <!-- 포트폴리오 인사이트 -->
+    <div class="mt-4 space-y-2">
+      <div class="insight-box danger">
+        <b>키크론 의존도:</b> 매출의 51.3% 단일 브랜드 의존. 포트폴리오 다각화 필요. 지티기어(29.9%)가 2위로 성장 중.
+      </div>
+      <div class="insight-box info">
+        <b>고단가 프리미엄:</b> MOZA는 수량 비중 4.4%이지만 매출 비중 19.7% — 건당 단가가 높은 프리미엄 브랜드. 다만 MoM -56.7% 급감 주의.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S6. 모델/상품 심층 분석 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="font-semibold text-[15px]">모델 / 상품 심층 분석</h2>
+    <p class="text-2xs text-sf-text-secondary mt-0.5">SAP Top/Bottom N + Salesforce Top Selling Products</p>
+  </div>
+  <div class="sf-card-body">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 키크론 모델 Top 5 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">키크론 모델 Top 5 추이</h3>
+        <div class="chart-container"><canvas id="modelTopChart"></canvas></div>
+        <div class="mt-2 mobile-table-wrap">
+          <table class="w-full sf-table text-xs">
+            <thead><tr><th>모델</th><th class="text-right">2월 매출</th><th class="text-right">MoM%</th><th>단계</th></tr></thead>
+            <tbody>
+              <tr><td class="font-medium">K MAX</td><td class="text-right">1.42억</td><td class="text-right text-sf-success">+12.3%</td><td><span class="sf-badge bg-sf-success-bg text-sf-success">성장</span></td></tr>
+              <tr><td class="font-medium">K PRO SE</td><td class="text-right">1.18억</td><td class="text-right text-sf-error">-8.4%</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+              <tr><td class="font-medium">K HE</td><td class="text-right">0.97억</td><td class="text-right text-sf-success">+22.1%</td><td><span class="sf-badge bg-sf-success-bg text-sf-success">성장</span></td></tr>
+              <tr><td class="font-medium">K PRO</td><td class="text-right">0.82억</td><td class="text-right text-sf-error">-15.2%</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">쇠퇴</span></td></tr>
+              <tr><td class="font-medium">K SE</td><td class="text-right">0.71억</td><td class="text-right text-sf-error">-5.1%</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Bottom 5 하락 + 액세서리 -->
+      <div>
+        <h3 class="text-xs font-semibold text-sf-text-secondary mb-3 uppercase tracking-wide">하락 모델 & 카테고리</h3>
+        <!-- Bottom 5 -->
+        <div class="mb-4">
+          <div class="text-xs font-medium mb-2 text-sf-error">▼ MoM 하락 Top 5 (단종/리뉴얼 검토)</div>
+          <div class="mobile-table-wrap">
+            <table class="w-full sf-table text-xs">
+              <thead><tr><th>모델/상품</th><th>브랜드</th><th class="text-right">MoM%</th><th>상태</th></tr></thead>
+              <tbody>
+                <tr><td class="font-medium">MOZA R21</td><td>MOZA</td><td class="text-right text-sf-error">-58.3%</td><td><span class="sf-badge bg-sf-error-bg text-sf-error">급감</span></td></tr>
+                <tr><td class="font-medium">트랙레이서 TR8</td><td>트랙레이서</td><td class="text-right text-sf-error">-57.3%</td><td><span class="sf-badge bg-sf-error-bg text-sf-error">급감</span></td></tr>
+                <tr><td class="font-medium">K5 SE</td><td>키크론</td><td class="text-right text-sf-error">-52.1%</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">쇠퇴</span></td></tr>
+                <tr><td class="font-medium">플레이시트 챌린지</td><td>플레이시트</td><td class="text-right text-sf-error">-50.4%</td><td><span class="sf-badge bg-sf-error-bg text-sf-error">급감</span></td></tr>
+                <tr><td class="font-medium">K3 PRO</td><td>키크론</td><td class="text-right text-sf-error">-44.7%</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">쇠퇴</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- 액세서리 카테고리 -->
+        <div>
+          <div class="text-xs font-medium mb-2">액세서리 카테고리 비중</div>
+          <div class="doughnut-container" style="height:180px"><canvas id="accessoryDoughnut"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <!-- 모델 인사이트 -->
+    <div class="mt-4 insight-box info">
+      <b>모델 교체 시그널:</b> K MAX(성장 +12.3%)가 K PRO(쇠퇴 -15.2%)를 대체 중. 시뮬레이터 3개 브랜드(MOZA/트랙레이서/플레이시트) 동시 급감 — 카테고리 시장 위축 또는 계절성 확인 필요.
+    </div>
+  </div>
+</div>
+
+<!-- ===== S7. 담당자별 성과 비교 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="font-semibold text-[15px]">담당자별 성과 비교</h2>
+    <p class="text-2xs text-sf-text-secondary mt-0.5">2026년 2월 기준</p>
+  </div>
+  <div class="sf-card-body">
+    <div class="mobile-table-wrap">
+      <table class="w-full sf-table">
+        <thead>
+          <tr>
+            <th>담당자</th>
+            <th>채널</th>
+            <th>관리 쇼핑몰</th>
+            <th class="text-right">2월 건수</th>
+            <th class="text-right">2월 수량</th>
+            <th class="text-right">2월 매출</th>
+            <th class="text-right">AOV (건당)</th>
+            <th class="text-right">매출 비중</th>
+            <th>특성</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="font-medium">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-sf-warning/20 flex items-center justify-center text-xs font-bold text-sf-warning">신</div>
+                신진우
+              </div>
+            </td>
+            <td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td>
+            <td class="text-xs text-sf-text-secondary">쿠팡/글로와이드/영풍 등 17개</td>
+            <td class="text-right">431</td>
+            <td class="text-right">5,786</td>
+            <td class="text-right font-bold">3.44억</td>
+            <td class="text-right font-medium">79.8만</td>
+            <td class="text-right">28.3%</td>
+            <td><span class="text-2xs text-sf-warning">고단가 B2B</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-sf-blue/20 flex items-center justify-center text-xs font-bold text-sf-blue">문</div>
+                문소현
+              </div>
+            </td>
+            <td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td>
+            <td class="text-xs text-sf-text-secondary">브랜드스토어/현대이지웰/컴퓨존</td>
+            <td class="text-right">1,973</td>
+            <td class="text-right">5,654</td>
+            <td class="text-right font-bold">4.17억</td>
+            <td class="text-right font-medium">21.1만</td>
+            <td class="text-right">34.3%</td>
+            <td><span class="text-2xs text-sf-blue">볼륨 리더</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-sf-success/20 flex items-center justify-center text-xs font-bold text-sf-success">박</div>
+                박혜경
+              </div>
+            </td>
+            <td><span class="sf-badge bg-gray-100 text-gray-600">ON/OFF</span></td>
+            <td class="text-xs text-sf-text-secondary">쿠팡/퍼스트몰</td>
+            <td class="text-right">1,518</td>
+            <td class="text-right">2,620</td>
+            <td class="text-right font-bold">4.02억</td>
+            <td class="text-right font-medium">26.5만</td>
+            <td class="text-right">33.1%</td>
+            <td><span class="text-2xs text-sf-success">균형형</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-xs font-bold text-purple-600">김</div>
+                김성은
+              </div>
+            </td>
+            <td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td>
+            <td class="text-xs text-sf-text-secondary">쇼피파이/ESM/29CM/무신사</td>
+            <td class="text-right">449</td>
+            <td class="text-right">583</td>
+            <td class="text-right font-bold">0.52억</td>
+            <td class="text-right font-medium">11.6만</td>
+            <td class="text-right">4.3%</td>
+            <td><span class="text-2xs text-purple-600">다채널 개척</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-3 insight-box">
+      <b>담당자 인사이트:</b> 신진우(OFF) 건당 79.8만원으로 고단가 B2B 특화. 문소현(ON) 최다 건수(1,973건)로 볼륨 리더. 김성은 건당 11.6만원 저단가이나 다채널 개척 중 — 쇼핑몰 확대 시 볼륨 성장 가능.
+    </div>
+  </div>
+</div>
+
+<!-- ===== S8. 이상 감지 & 액션 아이템 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header flex items-center gap-2">
+    <span class="w-2 h-2 rounded-full bg-sf-error animate-pulse"></span>
+    <h2 class="font-semibold text-[15px]">이상 감지 & 액션 아이템</h2>
+    <span class="sf-badge bg-sf-error-bg text-sf-error ml-auto">8건 감지</span>
+  </div>
+  <div class="sf-card-body">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 매출 급감 경고 -->
+      <div class="border border-sf-error/30 rounded-lg p-4 bg-sf-error-bg/30">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-6 h-6 rounded-full bg-sf-error text-white flex items-center justify-center text-xs font-bold">!</span>
+          <span class="text-sm font-semibold text-sf-error">매출 급감 경고</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between py-2 border-b border-sf-error/10">
+            <div><b>MOZA</b> — 시뮬레이터 휠</div>
+            <span class="text-sf-error font-bold">-58.3% MoM</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-sf-error/10">
+            <div><b>트랙레이서</b> — 레이싱 시트</div>
+            <span class="text-sf-error font-bold">-57.3% MoM</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-sf-error/10">
+            <div><b>플레이시트</b> — 레이싱 콕핏</div>
+            <span class="text-sf-error font-bold">-50.4% MoM</span>
+          </div>
+          <div class="text-sf-text-secondary mt-2 p-2 bg-white rounded">
+            ℹ 시뮬레이터 카테고리 3개 브랜드 동시 하락 → 시장 위축 또는 계절성 확인 필요
+          </div>
+        </div>
+      </div>
+      <!-- 목표 관련 경고 -->
+      <div class="border border-sf-warning/30 rounded-lg p-4 bg-sf-warning-bg/30">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-6 h-6 rounded-full bg-sf-warning text-white flex items-center justify-center text-xs font-bold">⚠</span>
+          <span class="text-sm font-semibold text-sf-warning">목표 & 채널 경고</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between py-2 border-b border-sf-warning/10">
+            <div><b>키크론</b> — 목표 달성 부족</div>
+            <span class="text-sf-error font-bold">54.7% (일 4,280만 필요)</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-sf-warning/10">
+            <div><b>에이퍼</b> — 목표 달성 부족</div>
+            <span class="text-sf-error font-bold">58.3%</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-sf-warning/10">
+            <div><b>지티기어</b> — 목표 미설정</div>
+            <span class="text-sf-warning font-bold">3.63억 발생, 목표 0</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-sf-warning/10">
+            <div><b>OFF 쿠팡</b> — 채널 집중</div>
+            <span class="text-sf-warning font-bold">63% 집중</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <div><b>ON 브랜드스토어</b> — 채널 집중</div>
+            <span class="text-sf-warning font-bold">42.5% 집중</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 권장 액션 -->
+    <div class="mt-4 border border-sf-border-light rounded-lg p-4">
+      <h3 class="text-sm font-semibold mb-3">권장 액션 아이템</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-error mt-0.5">●</span>
+          <div><b>긴급:</b> 키크론 2월 목표 달성을 위해 잔여 12일간 프로모션 집행 검토</div>
+        </div>
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-error mt-0.5">●</span>
+          <div><b>긴급:</b> 시뮬레이터 카테고리 일괄 급감 원인 파악 (시장/경쟁/계절)</div>
+        </div>
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-warning mt-0.5">●</span>
+          <div><b>중요:</b> 지티기어 월 목표 설정 (3~4억 수준 권장)</div>
+        </div>
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-warning mt-0.5">●</span>
+          <div><b>중요:</b> OFF 채널 쿠팡 외 신규 유통처 발굴 (집중 리스크 분산)</div>
+        </div>
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-blue mt-0.5">●</span>
+          <div><b>개선:</b> 견적건 7개(848만원) B2B 파이프라인 관리 시스템 구축</div>
+        </div>
+        <div class="flex items-start gap-2 p-2 bg-sf-bg rounded">
+          <span class="text-sf-blue mt-0.5">●</span>
+          <div><b>개선:</b> 하위 12개 소형 쇼핑몰 효율 검토 (합계 <5%)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S9. 상세 데이터 탭 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header">
+    <h2 class="font-semibold text-[15px]">상세 데이터</h2>
+  </div>
+  <div class="tab-bar-scroll border-b border-sf-border-light">
+    <div class="flex">
+      <button class="sf-tab active" onclick="switchDetailTab(this, 'detailShop')">쇼핑몰별 매출</button>
+      <button class="sf-tab" onclick="switchDetailTab(this, 'detailBrand')">브랜드별 매출</button>
+      <button class="sf-tab" onclick="switchDetailTab(this, 'detailModel')">모델별 매출</button>
+      <button class="sf-tab" onclick="switchDetailTab(this, 'detailDaily')">일별 상세</button>
+      <button class="sf-tab" onclick="switchDetailTab(this, 'detailGoal')">목표 관리</button>
+    </div>
+  </div>
+  <div class="sf-card-body">
+    <!-- 쇼핑몰별 매출 -->
+    <div id="detailShop" class="sf-tab-content active">
+      <div class="mobile-table-wrap">
+        <table class="w-full sf-table text-xs">
+          <thead>
+            <tr><th>쇼핑몰</th><th>담당자</th><th>채널</th><th class="text-right">건수</th><th class="text-right">수량</th><th class="text-right">매출</th><th class="text-right">AOV</th><th class="text-right">비중</th><th class="text-right">MoM%</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="font-medium">브랜드스토어</td><td>문소현</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">1,612</td><td class="text-right">4,231</td><td class="text-right font-bold">3.71억</td><td class="text-right">23.0만</td><td class="text-right">30.5%</td><td class="text-right text-sf-error">-42.3%</td></tr>
+            <tr><td class="font-medium">쿠팡(지티)</td><td>신진우</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right">198</td><td class="text-right">3,412</td><td class="text-right font-bold">2.17억</td><td class="text-right">109.6만</td><td class="text-right">17.9%</td><td class="text-right text-sf-error">-35.1%</td></tr>
+            <tr><td class="font-medium">쿠팡(캐논)</td><td>박혜경</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">1,218</td><td class="text-right">1,843</td><td class="text-right font-bold">1.82억</td><td class="text-right">14.9만</td><td class="text-right">15.0%</td><td class="text-right text-sf-error">-28.7%</td></tr>
+            <tr><td class="font-medium">밸류포인트</td><td>신진우</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right">87</td><td class="text-right">1,154</td><td class="text-right font-bold">0.77억</td><td class="text-right">88.5만</td><td class="text-right">6.3%</td><td class="text-right text-sf-success">+12.4%</td></tr>
+            <tr><td class="font-medium">ESM지마켓</td><td>김성은</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">201</td><td class="text-right">287</td><td class="text-right font-bold">0.35억</td><td class="text-right">17.4만</td><td class="text-right">2.9%</td><td class="text-right text-sf-error">-18.2%</td></tr>
+            <tr><td class="font-medium">쿠팡(키크론)</td><td>박혜경</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">165</td><td class="text-right">213</td><td class="text-right font-bold">0.34억</td><td class="text-right">20.6만</td><td class="text-right">2.8%</td><td class="text-right text-sf-error">-22.1%</td></tr>
+            <tr><td class="font-medium">퍼스트몰</td><td>박혜경</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">143</td><td class="text-right">198</td><td class="text-right font-bold">0.31억</td><td class="text-right">21.7만</td><td class="text-right">2.6%</td><td class="text-right text-sf-success">+5.2%</td></tr>
+            <tr><td class="font-medium">글로와이드</td><td>신진우</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">OFF</span></td><td class="text-right">34</td><td class="text-right">521</td><td class="text-right font-bold">0.19억</td><td class="text-right">55.9만</td><td class="text-right">1.6%</td><td class="text-right text-sf-error">-31.4%</td></tr>
+            <tr><td class="font-medium">네이버스마트</td><td>문소현</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">126</td><td class="text-right">178</td><td class="text-right font-bold">0.18억</td><td class="text-right">14.3만</td><td class="text-right">1.5%</td><td class="text-right text-sf-error">-8.7%</td></tr>
+            <tr><td class="font-medium">현대이지웰</td><td>문소현</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">ON</span></td><td class="text-right">52</td><td class="text-right">74</td><td class="text-right font-bold">0.10억</td><td class="text-right">19.2만</td><td class="text-right">0.8%</td><td class="text-right text-sf-success">+15.3%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 브랜드별 매출 -->
+    <div id="detailBrand" class="sf-tab-content">
+      <div class="mobile-table-wrap">
+        <table class="w-full sf-table text-xs">
+          <thead>
+            <tr><th>브랜드</th><th class="text-right">1월 수량</th><th class="text-right">1월 매출</th><th class="text-right">2월 수량</th><th class="text-right">2월 매출</th><th class="text-right">MoM%</th><th class="text-right">수량비중</th><th class="text-right">매출비중</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="font-medium">키크론</td><td class="text-right">19,243</td><td class="text-right">14.32억</td><td class="text-right">8,472</td><td class="text-right font-bold">6.21억</td><td class="text-right text-sf-error">-56.6%</td><td class="text-right">57.9%</td><td class="text-right">51.1%</td></tr>
+            <tr><td class="font-medium">지티기어</td><td class="text-right">5,821</td><td class="text-right">4.21억</td><td class="text-right">3,124</td><td class="text-right font-bold">3.63억</td><td class="text-right text-sf-error">-13.8%</td><td class="text-right">21.3%</td><td class="text-right">29.9%</td></tr>
+            <tr><td class="font-medium">캐논</td><td class="text-right">4,312</td><td class="text-right">3.56억</td><td class="text-right">1,843</td><td class="text-right font-bold">2.18억</td><td class="text-right text-sf-error">-38.7%</td><td class="text-right">12.6%</td><td class="text-right">17.9%</td></tr>
+            <tr><td class="font-medium">MOZA</td><td class="text-right">287</td><td class="text-right">1.23억</td><td class="text-right">120</td><td class="text-right font-bold">0.53억</td><td class="text-right text-sf-error">-56.7%</td><td class="text-right">0.8%</td><td class="text-right">4.4%</td></tr>
+            <tr><td class="font-medium">파나텍</td><td class="text-right">78</td><td class="text-right">0.42억</td><td class="text-right">43</td><td class="text-right font-bold">0.28억</td><td class="text-right text-sf-error">-33.3%</td><td class="text-right">0.3%</td><td class="text-right">2.3%</td></tr>
+            <tr><td class="font-medium">에이퍼</td><td class="text-right">1,521</td><td class="text-right">0.21억</td><td class="text-right">643</td><td class="text-right font-bold">0.14억</td><td class="text-right text-sf-error">-33.3%</td><td class="text-right">4.4%</td><td class="text-right">1.2%</td></tr>
+            <tr><td class="font-medium">기타</td><td class="text-right">3,651</td><td class="text-right">0.35억</td><td class="text-right">398</td><td class="text-right font-bold">0.18억</td><td class="text-right text-sf-error">-48.6%</td><td class="text-right">2.7%</td><td class="text-right">1.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 모델별 매출 -->
+    <div id="detailModel" class="sf-tab-content">
+      <div class="mobile-table-wrap">
+        <table class="w-full sf-table text-xs">
+          <thead>
+            <tr><th>모델</th><th>브랜드</th><th class="text-right">1월 매출</th><th class="text-right">2월 매출</th><th class="text-right">MoM%</th><th class="text-right">누적 매출</th><th>라이프사이클</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="font-medium">K MAX</td><td>키크론</td><td class="text-right">1.26억</td><td class="text-right font-bold">1.42억</td><td class="text-right text-sf-success">+12.3%</td><td class="text-right">2.68억</td><td><span class="sf-badge bg-sf-success-bg text-sf-success">성장</span></td></tr>
+            <tr><td class="font-medium">K PRO SE</td><td>키크론</td><td class="text-right">1.29억</td><td class="text-right font-bold">1.18억</td><td class="text-right text-sf-error">-8.4%</td><td class="text-right">2.47억</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+            <tr><td class="font-medium">K HE</td><td>키크론</td><td class="text-right">0.79억</td><td class="text-right font-bold">0.97억</td><td class="text-right text-sf-success">+22.1%</td><td class="text-right">1.76억</td><td><span class="sf-badge bg-sf-success-bg text-sf-success">성장</span></td></tr>
+            <tr><td class="font-medium">GT DD PRO</td><td>지티기어</td><td class="text-right">1.02억</td><td class="text-right font-bold">0.94억</td><td class="text-right text-sf-error">-7.8%</td><td class="text-right">1.96억</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+            <tr><td class="font-medium">EOS R50</td><td>캐논</td><td class="text-right">0.91억</td><td class="text-right font-bold">0.87억</td><td class="text-right text-sf-error">-4.4%</td><td class="text-right">1.78억</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+            <tr><td class="font-medium">K PRO</td><td>키크론</td><td class="text-right">0.96억</td><td class="text-right font-bold">0.82억</td><td class="text-right text-sf-error">-15.2%</td><td class="text-right">1.78억</td><td><span class="sf-badge bg-sf-warning-bg text-sf-warning">쇠퇴</span></td></tr>
+            <tr><td class="font-medium">K SE</td><td>키크론</td><td class="text-right">0.75억</td><td class="text-right font-bold">0.71억</td><td class="text-right text-sf-error">-5.1%</td><td class="text-right">1.46억</td><td><span class="sf-badge bg-sf-blue-light text-sf-blue">성숙</span></td></tr>
+            <tr><td class="font-medium">MOZA R21</td><td>MOZA</td><td class="text-right">0.87억</td><td class="text-right font-bold">0.36억</td><td class="text-right text-sf-error">-58.3%</td><td class="text-right">1.23억</td><td><span class="sf-badge bg-sf-error-bg text-sf-error">급감</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 일별 상세 -->
+    <div id="detailDaily" class="sf-tab-content">
+      <div class="mobile-table-wrap">
+        <table class="w-full sf-table text-xs">
+          <thead>
+            <tr><th>날짜</th><th>요일</th><th class="text-right">전체 매출</th><th class="text-right">ON</th><th class="text-right">OFF</th><th class="text-right">건수</th><th class="text-right">전일대비</th><th class="text-right">전주동요일</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2/3</td><td>월</td><td class="text-right font-bold">1.82억</td><td class="text-right">1.31억</td><td class="text-right">0.51억</td><td class="text-right">612</td><td class="text-right text-sf-success">+142.7%</td><td class="text-right text-sf-success">+8.3%</td></tr>
+            <tr><td>2/4</td><td>화</td><td class="text-right font-bold">1.45억</td><td class="text-right">1.02억</td><td class="text-right">0.43억</td><td class="text-right">523</td><td class="text-right text-sf-error">-20.3%</td><td class="text-right text-sf-success">+5.1%</td></tr>
+            <tr><td>2/5</td><td>수</td><td class="text-right font-bold">1.21억</td><td class="text-right">0.89억</td><td class="text-right">0.32억</td><td class="text-right">478</td><td class="text-right text-sf-error">-16.6%</td><td class="text-right text-sf-error">-2.4%</td></tr>
+            <tr><td>2/6</td><td>목</td><td class="text-right font-bold">1.34억</td><td class="text-right">0.98億</td><td class="text-right">0.36억</td><td class="text-right">501</td><td class="text-right text-sf-success">+10.7%</td><td class="text-right text-sf-success">+3.8%</td></tr>
+            <tr><td>2/7</td><td>금</td><td class="text-right font-bold">1.08억</td><td class="text-right">0.78억</td><td class="text-right">0.30억</td><td class="text-right">412</td><td class="text-right text-sf-error">-19.4%</td><td class="text-right text-sf-error">-7.2%</td></tr>
+            <tr><td>2/8</td><td>토</td><td class="text-right font-bold">0.54억</td><td class="text-right">0.43억</td><td class="text-right">0.11억</td><td class="text-right">198</td><td class="text-right text-sf-error">-50.0%</td><td class="text-right text-sf-success">+2.1%</td></tr>
+            <tr><td>2/9</td><td>일</td><td class="text-right font-bold">0.21억</td><td class="text-right">0.18억</td><td class="text-right">0.03억</td><td class="text-right">87</td><td class="text-right text-sf-error">-61.1%</td><td class="text-right text-sf-error">-5.4%</td></tr>
+            <tr class="bg-sf-blue-light/30"><td>2/10</td><td>월</td><td class="text-right font-bold">1.67億</td><td class="text-right">1.21억</td><td class="text-right">0.46억</td><td class="text-right">587</td><td class="text-right text-sf-success">+695.2%</td><td class="text-right text-sf-error">-8.2%</td></tr>
+            <tr class="bg-sf-blue-light/30"><td>2/11</td><td>화</td><td class="text-right font-bold">1.38억</td><td class="text-right">0.97억</td><td class="text-right">0.41億</td><td class="text-right">498</td><td class="text-right text-sf-error">-17.4%</td><td class="text-right text-sf-error">-4.8%</td></tr>
+            <tr class="bg-sf-blue-light/30"><td>2/12</td><td>수</td><td class="text-right font-bold">1.45억</td><td class="text-right">0.95억</td><td class="text-right">0.50億</td><td class="text-right">475</td><td class="text-right text-sf-success">+5.1%</td><td class="text-right text-sf-success">+19.8%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 목표 관리 -->
+    <div id="detailGoal" class="sf-tab-content">
+      <div class="mobile-table-wrap">
+        <table class="w-full sf-table text-xs">
+          <thead>
+            <tr><th>브랜드</th><th class="text-right">월 목표</th><th class="text-right">현재 매출</th><th class="text-right">달성률</th><th class="text-right">잔여액</th><th class="text-right">필요 일매출</th><th>페이스</th><th>상태</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium">키크론</td><td class="text-right">11.35억</td><td class="text-right font-bold">6.21억</td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <div class="w-16 progress-bar-bg"><div class="progress-bar-fill bg-sf-error" style="width:54.7%"></div></div>
+                  <span class="text-sf-error font-bold">54.7%</span>
+                </div>
+              </td>
+              <td class="text-right text-sf-error">5.14억</td><td class="text-right font-bold text-sf-error">4,280만</td>
+              <td><span class="sf-badge bg-sf-error-bg text-sf-error">부족</span></td>
+              <td><span class="text-sf-error">현재 일평균 3,450만 → 124% 필요</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">캐논</td><td class="text-right">3.00억</td><td class="text-right font-bold">2.18억</td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <div class="w-16 progress-bar-bg"><div class="progress-bar-fill bg-sf-success" style="width:72.7%"></div></div>
+                  <span class="text-sf-success font-bold">72.7%</span>
+                </div>
+              </td>
+              <td class="text-right">0.82억</td><td class="text-right font-bold">683만</td>
+              <td><span class="sf-badge bg-sf-success-bg text-sf-success">양호</span></td>
+              <td><span class="text-sf-success">현재 일평균 1,210만 → 달성 가능</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">에이퍼</td><td class="text-right">0.24억</td><td class="text-right font-bold">0.14억</td>
+              <td class="text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <div class="w-16 progress-bar-bg"><div class="progress-bar-fill bg-sf-error" style="width:58.3%"></div></div>
+                  <span class="text-sf-error font-bold">58.3%</span>
+                </div>
+              </td>
+              <td class="text-right text-sf-error">0.10억</td><td class="text-right font-bold text-sf-error">83만</td>
+              <td><span class="sf-badge bg-sf-warning-bg text-sf-warning">주의</span></td>
+              <td><span class="text-sf-warning">현재 일평균 78만 → 107% 필요</span></td>
+            </tr>
+            <tr class="bg-sf-warning-bg/30">
+              <td class="font-medium">지티기어</td><td class="text-right text-sf-warning font-bold">미설정</td><td class="text-right font-bold">3.63억</td>
+              <td class="text-right">—</td>
+              <td class="text-right">—</td><td class="text-right">—</td>
+              <td><span class="sf-badge bg-sf-warning-bg text-sf-warning">미설정</span></td>
+              <td><span class="text-sf-warning">⚠ 목표 설정 필요 (3~4억 권장)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== S10. 알림 & 리포트 설정 ===== -->
+<div class="sf-card">
+  <div class="sf-card-header collapsible-header flex items-center justify-between" onclick="toggleSettings()">
+    <h2 class="font-semibold text-[15px]">알림 & 자동 리포트 설정</h2>
+    <svg class="chevron w-5 h-5 text-sf-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+  <div id="settingsPanel" class="sf-card-body" style="display:none;">
+    <div class="settings-grid">
+      <!-- 매출 알림 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+          <span class="w-5 h-5 rounded bg-sf-error/10 flex items-center justify-center text-sf-error text-xs">🔔</span>
+          매출 알림
+        </h3>
+        <div class="space-y-3 text-xs">
+          <div class="flex items-center justify-between">
+            <span>목표달성률 &lt;70% 시 알림</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>일매출 전주동요일 대비 -30%</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>채널 HHI 집중도 1,500+ 경고</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>브랜드 MoM -40% 이상 하락</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- 자동 리포트 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+          <span class="w-5 h-5 rounded bg-sf-blue/10 flex items-center justify-center text-sf-blue text-xs">📊</span>
+          자동 리포트
+        </h3>
+        <div class="space-y-3 text-xs">
+          <div class="flex items-center justify-between">
+            <span>일간 요약 (매일 09:00)</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>주간 분석 (월요일 09:00)</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>월간 리뷰 (매월 1일 09:00)</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-sf-border rounded-full peer peer-checked:bg-sf-blue after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>수신자</span>
+            <span class="text-sf-blue font-medium">관리자 (4명)</span>
+          </div>
+        </div>
+      </div>
+      <!-- 임계값 설정 -->
+      <div class="border border-sf-border-light rounded-lg p-4">
+        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+          <span class="w-5 h-5 rounded bg-sf-warning/10 flex items-center justify-center text-sf-warning text-xs">⚙</span>
+          임계값 커스텀
+        </h3>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="text-sf-text-secondary">목표달성률 경고 (%)</label>
+            <input type="number" value="70" class="mt-1 w-full border border-sf-border rounded px-3 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="text-sf-text-secondary">채널집중도 HHI 경고</label>
+            <input type="number" value="1500" class="mt-1 w-full border border-sf-border rounded px-3 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="text-sf-text-secondary">MoM 하락률 경고 (%)</label>
+            <input type="number" value="40" class="mt-1 w-full border border-sf-border rounded px-3 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="text-sf-text-secondary">AOV 변동률 경고 (%)</label>
+            <input type="number" value="20" class="mt-1 w-full border border-sf-border rounded px-3 py-1.5 text-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button class="text-xs bg-sf-blue text-white px-4 py-2 rounded hover:bg-blue-700 font-medium">설정 저장</button>
+      <button class="text-xs border border-sf-border px-4 py-2 rounded text-sf-text-secondary hover:bg-sf-bg">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="text-center py-6 text-2xs text-sf-text-tertiary">
+  매출 분석 대시보드 프로토타입 v1.0 | ToBe Networks Admin Redesign | Salesforce Lightning UX
+  <br>벤치마크: Salesforce Commerce Cloud · SAP S/4HANA Retail · Shopify Analytics
+</footer>
+
+</main>
+
+<script>
+// ===== Period Buttons =====
+document.querySelectorAll('.period-btn[data-period]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.parentElement.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ===== Trend Tab Switching =====
+document.querySelectorAll('.period-btn[data-trend]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.parentElement.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const target = this.dataset.trend;
+    document.querySelectorAll('#trendDaily, #trendMonthly, #trendYearly').forEach(el => el.classList.remove('active'));
+    if(target === 'daily') document.getElementById('trendDaily').classList.add('active');
+    if(target === 'monthly') document.getElementById('trendMonthly').classList.add('active');
+    if(target === 'yearly') document.getElementById('trendYearly').classList.add('active');
+  });
+});
+
+// ===== Detail Tab Switching =====
+function switchDetailTab(btn, tabId) {
+  btn.parentElement.querySelectorAll('.sf-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#detailShop, #detailBrand, #detailModel, #detailDaily, #detailGoal').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// ===== Settings Panel Toggle =====
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  const header = panel.previousElementSibling;
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    header.classList.add('open');
+  } else {
+    panel.style.display = 'none';
+    header.classList.remove('open');
+  }
+}
+
+// ===== Chart.js Configuration =====
+const sfBlue = '#0176D3';
+const sfOrange = '#FE9339';
+const sfGreen = '#2E844A';
+const sfRed = '#BA0517';
+const sfGray = '#939393';
+const sfPurple = '#7B61FF';
+const sfTeal = '#00B4D8';
+
+// Daily Trend Chart
+const dailyCtx = document.getElementById('dailyTrendChart').getContext('2d');
+new Chart(dailyCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2/3(월)','2/4(화)','2/5(수)','2/6(목)','2/7(금)','2/8(토)','2/9(일)','2/10(월)','2/11(화)','2/12(수)'],
+    datasets: [
+      {
+        label: '일별 매출(억)',
+        data: [1.82, 1.45, 1.21, 1.34, 1.08, 0.54, 0.21, 1.67, 1.38, 1.45],
+        backgroundColor: 'rgba(1,118,211,0.6)',
+        borderColor: sfBlue,
+        borderWidth: 1,
+        borderRadius: 3,
+        order: 2
+      },
+      {
+        label: '7일 이동평균',
+        data: [null, null, null, null, null, null, 1.09, 1.07, 1.05, 1.08],
+        type: 'line',
+        borderColor: sfOrange,
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: sfOrange,
+        fill: false,
+        tension: 0.3,
+        order: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Monthly Trend Chart
+const monthlyCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+new Chart(monthlyCtx, {
+  type: 'bar',
+  data: {
+    labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+    datasets: [
+      {
+        label: '2026년',
+        data: [24.3, 12.2, null, null, null, null, null, null, null, null, null, null],
+        backgroundColor: 'rgba(1,118,211,0.7)',
+        borderColor: sfBlue,
+        borderWidth: 1,
+        borderRadius: 3
+      },
+      {
+        label: '2025년',
+        data: [22.1, 11.2, 18.7, 21.3, 19.8, 17.2, 16.4, 15.8, 18.9, 22.4, 24.8, 28.6],
+        backgroundColor: 'rgba(147,147,147,0.3)',
+        borderColor: sfGray,
+        borderWidth: 1,
+        borderRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Yearly Trend Chart
+const yearlyCtx = document.getElementById('yearlyTrendChart').getContext('2d');
+new Chart(yearlyCtx, {
+  type: 'bar',
+  data: {
+    labels: ['1월','2월','3월','4월','5월','6월'],
+    datasets: [
+      { label: '2022', data: [6.2, 4.8, 7.1, 8.3, 7.5, 6.1], backgroundColor: 'rgba(147,147,147,0.2)', borderRadius: 2 },
+      { label: '2023', data: [9.4, 7.2, 10.8, 12.1, 11.3, 9.8], backgroundColor: 'rgba(147,147,147,0.35)', borderRadius: 2 },
+      { label: '2024', data: [15.2, 9.8, 14.3, 16.7, 15.1, 13.2], backgroundColor: 'rgba(147,147,147,0.5)', borderRadius: 2 },
+      { label: '2025', data: [22.1, 11.2, 18.7, 21.3, 19.8, 17.2], backgroundColor: 'rgba(254,147,57,0.5)', borderRadius: 2 },
+      { label: '2026', data: [24.3, 12.2, null, null, null, null], backgroundColor: 'rgba(1,118,211,0.7)', borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 11 }, callback: v => v + '억' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Channel Doughnut
+const chDoughCtx = document.getElementById('channelDoughnut').getContext('2d');
+new Chart(chDoughCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['ON (온라인)', 'OFF (오프라인)'],
+    datasets: [{
+      data: [8.72, 3.44],
+      backgroundColor: [sfBlue, sfOrange],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 16, boxWidth: 12 } }
+    }
+  }
+});
+
+// AOV Chart
+const aovCtx = document.getElementById('aovChart').getContext('2d');
+new Chart(aovCtx, {
+  type: 'bar',
+  data: {
+    labels: ['쿠팡(지티)', '밸류포인트', '글로와이드', '브랜드스토어', '퍼스트몰', '쿠팡(키크론)', 'ESM지마켓', '네이버스마트'],
+    datasets: [{
+      label: 'AOV (만원)',
+      data: [109.6, 88.5, 55.9, 23.0, 21.7, 20.6, 17.4, 14.3],
+      backgroundColor: function(ctx) {
+        const i = ctx.dataIndex;
+        return i < 3 ? 'rgba(254,147,57,0.6)' : 'rgba(1,118,211,0.6)';
+      },
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '만' } },
+      y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Brand Doughnut
+const brandCtx = document.getElementById('brandDoughnut').getContext('2d');
+new Chart(brandCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['키크론 51.1%', '지티기어 29.9%', '캐논 17.9%', 'MOZA 4.4%', '파나텍 2.3%', '에이퍼 1.2%', '기타 1.5%'],
+    datasets: [{
+      data: [6.21, 3.63, 2.18, 0.53, 0.28, 0.14, 0.18],
+      backgroundColor: [sfBlue, sfOrange, sfGreen, sfRed, sfPurple, sfTeal, sfGray],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10, boxWidth: 10 } }
+    }
+  }
+});
+
+// Gap Analysis Chart (수량비중 vs 매출비중)
+const gapCtx = document.getElementById('gapChart').getContext('2d');
+new Chart(gapCtx, {
+  type: 'bar',
+  data: {
+    labels: ['키크론', '지티기어', '캐논', 'MOZA', '에이퍼', '파나텍'],
+    datasets: [
+      {
+        label: '수량 비중(%)',
+        data: [57.9, 21.3, 12.6, 0.8, 4.4, 0.3],
+        backgroundColor: 'rgba(1,118,211,0.5)',
+        borderRadius: 3
+      },
+      {
+        label: '매출 비중(%)',
+        data: [51.1, 29.9, 17.9, 4.4, 1.2, 2.3],
+        backgroundColor: 'rgba(254,147,57,0.5)',
+        borderRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '%' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Model Top 5 Chart
+const modelCtx = document.getElementById('modelTopChart').getContext('2d');
+new Chart(modelCtx, {
+  type: 'line',
+  data: {
+    labels: ['10월', '11월', '12월', '1월', '2월'],
+    datasets: [
+      { label: 'K MAX', data: [0.82, 0.95, 1.08, 1.26, 1.42], borderColor: sfBlue, backgroundColor: sfBlue, pointRadius: 3, tension: 0.3, borderWidth: 2 },
+      { label: 'K PRO SE', data: [1.31, 1.28, 1.22, 1.29, 1.18], borderColor: sfOrange, backgroundColor: sfOrange, pointRadius: 3, tension: 0.3, borderWidth: 2 },
+      { label: 'K HE', data: [0.41, 0.52, 0.68, 0.79, 0.97], borderColor: sfGreen, backgroundColor: sfGreen, pointRadius: 3, tension: 0.3, borderWidth: 2 },
+      { label: 'K PRO', data: [1.12, 1.08, 1.01, 0.96, 0.82], borderColor: sfRed, backgroundColor: sfRed, pointRadius: 3, tension: 0.3, borderWidth: 2, borderDash: [4,2] },
+      { label: 'K SE', data: [0.68, 0.72, 0.74, 0.75, 0.71], borderColor: sfGray, backgroundColor: sfGray, pointRadius: 3, tension: 0.3, borderWidth: 2 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 10 }, callback: v => v + '억' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// Accessory Doughnut
+const accCtx = document.getElementById('accessoryDoughnut').getContext('2d');
+new Chart(accCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['마우스', '실리콘팜레스트', '키캡', '더스트커버', '스위치', '기타'],
+    datasets: [{
+      data: [32, 22, 18, 12, 9, 7],
+      backgroundColor: [sfBlue, sfOrange, sfGreen, sfPurple, sfTeal, sfGray],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '55%',
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } }
+    }
+  }
+});
+</script>
+</body>
+</html>
