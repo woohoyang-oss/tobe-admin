@@ -108,7 +108,11 @@ tailwind.config = {
 <!-- Navigation Bar -->
 <nav class="bg-sf-nav text-white h-10 flex items-center px-4 text-sm">
   <span class="font-semibold tracking-wide mr-6">ToBe Networks</span>
-  <span class="text-white/60 text-xs">매출 분석 대시보드</span>
+  <div class="flex items-center gap-1 text-xs">
+    <a href="sales-dashboard-prototype.html" class="px-3 py-1.5 rounded text-white bg-white/15 font-medium">매출 대시보드</a>
+    <a href="sales-analysis-prototype.html" class="px-3 py-1.5 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors">판매 분석</a>
+    <a href="inventory-analysis-prototype.html" class="px-3 py-1.5 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors">재고 분석</a>
+  </div>
   <div class="ml-auto flex items-center gap-3">
     <div class="flex items-center gap-1.5" id="themeSwitcher">
       <button data-theme="salesforce" title="Salesforce" class="theme-swatch active" style="background:linear-gradient(135deg,#032D60 50%,#0176D3 50%)"></button>
